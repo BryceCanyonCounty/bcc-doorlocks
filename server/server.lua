@@ -3,6 +3,7 @@ TriggerEvent("getCore", function(core)
   VORPcore = core
 end)
 VORPInv = exports.vorp_inventory:vorp_inventoryApi()
+BccUtils = exports['bcc-utils'].initiate()
 
 ------ DataBase Handling ------
 RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyItem) --Handles door creation and locks the door for all clients upon creation
@@ -91,3 +92,5 @@ RegisterServerEvent('bcc-doorlocks:RemoveLockpick', function() --Removing Lockpi
   local _source = source
   VORPInv.subItem(_source, Config.LockPicking.minigameSettings.lockpickitem, 1)
 end)
+
+BccUtils.Versioner.checkRelease(GetCurrentResourceName(), 'https://github.com/BryceCanyonCounty/bcc-doorlocks')
