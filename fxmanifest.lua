@@ -21,3 +21,5 @@ client_scripts {
   "/client/doorhashes.lua",
   '/client/MenuSetup.lua'
 }
+
+version '1.0.0'
