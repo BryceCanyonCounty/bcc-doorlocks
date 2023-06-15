@@ -6,8 +6,9 @@ Locales["en_lang"] = {
     doorExists = 'Door already has been locked',
     createDoorInstructions = 'Aim at the door you wish to lock, and press "G" while aiming at it too lock the door!',
     deleteDoorInstructions = 'Aim at the door you wish to delete, and press "G" while aiming at it too delete the door!',
-    questionLocking = 'Lock this door?',
-    questionDeletion = 'Delete this door lock?',
+    doorNotShow = 'If the door you are aiming at is not showing up press "e" and stand beside it!',
+    questionLocking = 'Lock this door Press "G"?',
+    questionDeletion = 'Delete this door lock Press "G"?',
     doorDeleted = 'Door deleted!',
 
     ----Non admin text ----

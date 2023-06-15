@@ -16,34 +16,59 @@ function getDoor(type) --Funct to unlock door
   elseif type == 'deletion' then
     VORPcore.NotifyRightTip(_U("deleteDoorInstructions"), 4000)
   end
+  VORPcore.NotifyRightTip(_U("doorNotShow"), 4000)
+
+  local type2 = false
   while true do
     Wait(5)
     local id = PlayerId()
-    if IsPlayerFreeAiming(id) then
-      local bool, entity = GetEntityPlayerIsFreeAimingAt(id)
-      if bool then
-        local model = GetEntityModel(entity)
-        if model ~= nil and model ~= 0 then
-          for k, v in pairs(Doorhashes) do
-            if v[2] == model then
-              table.insert(modelAimedAt, v)
+    if not type2 then
+      if IsControlJustReleased(0, 0xCEFD9220) then type2 = true end
+      if IsPlayerFreeAiming(id) then
+        local bool, entity = GetEntityPlayerIsFreeAimingAt(id)
+        if bool then
+          local model = GetEntityModel(entity)
+          if model ~= nil and model ~= 0 then
+            for k, v in pairs(Doorhashes) do
+              if v[2] == model then
+                table.insert(modelAimedAt, v)
+              end
             end
-          end
 
-          for k, v in pairs(modelAimedAt) do
-            local aimedEntityCoords = GetEntityCoords(entity)
-            if GetDistanceBetweenCoords(v[4], v[5], v[6], aimedEntityCoords.x, aimedEntityCoords.y, aimedEntityCoords.z, true) < 1 then
-              door = v break
+            for k, v in pairs(modelAimedAt) do
+              local aimedEntityCoords = GetEntityCoords(entity)
+              if GetDistanceBetweenCoords(v[4], v[5], v[6], aimedEntityCoords.x, aimedEntityCoords.y, aimedEntityCoords.z, true) < 1 then
+                door = v break
+              end
+            end
+            if door ~= nil then
+              if type == 'creation' then
+                BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionLocking"))
+              elseif type == 'deletion' then
+                BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionDeletion"))
+              end
+              if IsControlJustReleased(0, 0x760A9C6F) then break end
             end
           end
-          if door ~= nil then
-            if type == 'creation' then
-              BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionLocking"))
-            elseif type == 'deletion' then
-              BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionDeletion"))
-            end
-            if IsControlJustReleased(0, 0x760A9C6F) then break end
+        end
+      end
+    else
+      local plc = GetEntityCoords(PlayerPedId())
+      for k, v in pairs(Doorhashes) do
+        if GetDistanceBetweenCoords(plc.x, plc.y, plc.z, v[4], v[5], v[6], true) < 1.5 then
+          door = v break
+        end
+      end
+      if door ~= nil then
+        if GetDistanceBetweenCoords(plc.x, plc.y, plc.z, door[4], door[5], door[6], true) < 1.5 then
+          if type == 'creation' then
+            BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionLocking"))
+          elseif type == 'deletion' then
+            BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionDeletion"))
           end
+          if IsControlJustReleased(0, 0x760A9C6F) then break end
+        else
+          door = nil
         end
       end
     end
