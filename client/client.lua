@@ -32,7 +32,11 @@ RegisterNetEvent('bcc-doorlocks:ClientSetDoorStatus', function(doorTable, locked
     end
 end)
 
-RegisterCommand('testlockr', function() --test db door load command
-    TriggerServerEvent('bcc-doorlocks:AdminCheck')
-    TriggerServerEvent('bcc-doorlocks:InitLoadDoorLocks')
+CreateThread(function()
+    if Config.DevMode then
+        RegisterCommand('devboy', function()
+            TriggerServerEvent('bcc-doorlocks:InitLoadDoorLocks')
+            TriggerServerEvent('bcc-doorlocks:AdminCheck')
+        end)
+    end
 end)

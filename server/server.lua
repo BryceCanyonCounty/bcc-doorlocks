@@ -7,7 +7,13 @@ BccUtils = exports['bcc-utils'].initiate()
 
 ------ DataBase Handling ------
 RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyItem) --Handles door creation and locks the door for all clients upon creation
-  local param = { ['jobs'] = json.encode(jobs), ['key'] = keyItem, ['locked'] = 'true', ['doorinfo'] = json.encode(doorTable) }
+  local kItem
+  if keyItem ~= nil then
+    kItem = keyItem
+  else
+    kItem = 'none'
+  end
+  local param = { ['jobs'] = json.encode(jobs), ['key'] = kItem, ['locked'] = 'true', ['doorinfo'] = json.encode(doorTable) }
   local _source = source
 
   exports.oxmysql:execute("SELECT * FROM doorlocks WHERE doorinfo=@doorinfo", param, function(result)
