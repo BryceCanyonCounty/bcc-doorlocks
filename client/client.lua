@@ -31,3 +31,12 @@ RegisterNetEvent('bcc-doorlocks:ClientSetDoorStatus', function(doorTable, locked
         lockAndUnlockDoorHandler(doorTable)
     end
 end)
+
+CreateThread(function()
+    if Config.DevMode then
+        RegisterCommand('devboy', function()
+            TriggerServerEvent('bcc-doorlocks:InitLoadDoorLocks')
+            TriggerServerEvent('bcc-doorlocks:AdminCheck')
+        end)
+    end
+end)
