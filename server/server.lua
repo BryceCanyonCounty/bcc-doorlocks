@@ -75,6 +75,8 @@ RegisterServerEvent('bcc-doorlocks:ServDoorStatusSet', function(doorTable, locke
     if VORPInv.getItemCount(_source, result[1].keyitem) >= 1 then
       exports.oxmysql:execute("UPDATE doorlocks SET locked=@locked WHERE doorinfo=@doorinfo", param)
       TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false)
+    else
+      VORPcore.NotifyRightTip(_source, "You don't have the right key", 4000)
     end
   end
 end)
