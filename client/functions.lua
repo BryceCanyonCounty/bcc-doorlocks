@@ -89,11 +89,13 @@ function lockAndUnlockDoorHandler(doorTable) --function to lock doors
       if doorStatus ~= 1 then
         PromptGroup:ShowGroup(_U("doorManage"))
         if firstprompt:HasCompleted() then
+          OpenDoor()
           TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, true)
         end
       elseif doorStatus ~= 0 then
         PromptGroup2:ShowGroup(_U("doorManage"))
         if firstprompt2:HasCompleted() then
+          OpenDoor()
           TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false)
         end
         if firstprompt3:HasCompleted() then
@@ -105,6 +107,42 @@ function lockAndUnlockDoorHandler(doorTable) --function to lock doors
     elseif dist >= 100 then
       Wait(3000)
     end
+  end
+end
+
+function OpenDoor()
+  prop_name = 'P_KEY02X'
+  local ped = PlayerPedId()
+  local x,y,z = table.unpack(GetEntityCoords(ped, true))
+  local prop = CreateObject(GetHashKey(prop_name), x, y, z + 0.2, true, true, true)
+  local boneIndex = GetEntityBoneIndexByName(ped, "SKEL_R_Finger12")
+  local key = false
+  if not IsEntityPlayingAnim(ped, "script_common@jail_cell@unlock@key", "action", 3) then
+      local waiting = 0
+      RequestAnimDict("script_common@jail_cell@unlock@key")
+      while not HasAnimDictLoaded("script_common@jail_cell@unlock@key") do
+          waiting = waiting + 100
+          Citizen.Wait(100)
+          if waiting > 3000 then
+              break
+          end
+      end
+      Wait(100)
+      TaskPlayAnim(ped, 'script_common@jail_cell@unlock@key', 'action', 8.0, -8.0, 2500, 31, 0, true, 0, false, 0, false)
+      Wait(750)
+      AttachEntityToEntity(prop, ped,boneIndex, 0.02, 0.0120, -0.00850, 0.024, -160.0, 200.0, true, true, false, true, 1, true)
+      key = true
+      while key do
+          if IsEntityPlayingAnim(ped, "script_common@jail_cell@unlock@key", "action", 3) then
+              Wait(100)
+          else
+              ClearPedSecondaryTask(ped)
+              DeleteObject(prop)
+              RemoveAnimDict("script_common@jail_cell@unlock@key")
+              key = false
+              break
+          end
+      end
   end
 end
 
@@ -130,6 +168,15 @@ RegisterNetEvent('bcc-doorlocks:lockpickingMinigame', function(doorTable)
 
   MiniGame.Start('lockpick', cfg, function(result)
     if result.unlocked then
+      local ped = PlayerPedId()
+      local anim = "mini_games@story@mud5@cracksafe_look_at_dial@small_r@ped"
+      local open = "open"
+      RequestAnimDict(anim)
+      while not HasAnimDictLoaded(anim) do
+          Citizen.Wait(50)
+      end
+      TaskPlayAnim(ped, anim, open, 8.0, -8.0, -1, 32, 0, false, false, false)
+      Citizen.Wait(1250)
       VORPcore.NotifyRightTip(_U("lockPicked"), 4000)
       TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false)
     else
