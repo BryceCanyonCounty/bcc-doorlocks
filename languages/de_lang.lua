@@ -6,6 +6,7 @@ Locales["de_lang"] = {
     doorExists = 'Die Tür ist bereits verschlossen!',
     createDoorInstructions = 'Ziele auf die Tür und drücke "G" während du auf Sie zielst, um Sie zu erstellen!',
     deleteDoorInstructions = 'Ziele auf die Tür und drücke "G" während du auf Sie zielst, um Sie zu löschen!',
+    doorNotShow = 'Wenn du auf die Tür zielst und Sie nicht angezeigt wird, stell dich neben die Tür und drücke "E" !',
     questionLocking = 'Die Tür verschließen?',
     questionDeletion = 'Die Tür löschen?',
     doorDeleted = 'Tür gelöscht!',
