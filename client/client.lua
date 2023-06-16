@@ -40,3 +40,14 @@ CreateThread(function()
         end)
     end
 end)
+
+----- Exports -------
+exports('createDoor', function()
+    local door = getDoor('creation')
+    doorCreationMenu(door)
+end)
+
+exports('deleteDoor', function()
+    local door = getDoor('deletion')
+    TriggerServerEvent('bcc-doorlocks:DeleteDoor', door)
+end)

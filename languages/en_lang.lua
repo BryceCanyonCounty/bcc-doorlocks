@@ -27,5 +27,7 @@ Locales["en_lang"] = {
     setKeyItem_desc = 'Set a key item, that will be used to lock and unlock this door! You must enter the database name of the item!',
     confirm = 'Confirm',
     confirm_desc = 'Finish door creation!',
-    InvalidInput = 'Invalid Input'
+    InvalidInput = 'Invalid Input',
+    setIds = "Set Id's",
+    setIds_desc = "Set ID's allowed to lock and unlock the door. To set multiple Id's just choose this option again after you input an id."
 }

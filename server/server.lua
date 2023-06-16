@@ -6,19 +6,24 @@ VORPInv = exports.vorp_inventory:vorp_inventoryApi()
 BccUtils = exports['bcc-utils'].initiate()
 
 ------ DataBase Handling ------
-RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyItem) --Handles door creation and locks the door for all clients upon creation
-  local kItem
+RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyItem, ids) --Handles door creation and locks the door for all clients upon creation
+  local kItem, pIds
   if keyItem ~= nil then
     kItem = keyItem
   else
     kItem = 'none'
   end
-  local param = { ['jobs'] = json.encode(jobs), ['key'] = kItem, ['locked'] = 'true', ['doorinfo'] = json.encode(doorTable) }
+  if ids ~= nil then
+    pIds = ids
+  else
+    pIds = 'none'
+  end
+  local param = { ['jobs'] = json.encode(jobs), ['key'] = kItem, ['locked'] = 'true', ['doorinfo'] = json.encode(doorTable), ['ids'] = json.encode(pIds) }
   local _source = source
 
   exports.oxmysql:execute("SELECT * FROM doorlocks WHERE doorinfo=@doorinfo", param, function(result)
     if not result[1] then
-      exports.oxmysql:execute("INSERT INTO doorlocks ( `jobsallowedtoopen`,`keyitem`,`locked`,`doorinfo` ) VALUES ( @jobs,@key,@locked,@doorinfo )", param)
+      exports.oxmysql:execute("INSERT INTO doorlocks ( `jobsallowedtoopen`,`keyitem`,`locked`,`doorinfo`,`ids_allowed` ) VALUES ( @jobs,@key,@locked,@doorinfo,@ids )", param)
       TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, true, true, false)
       VORPcore.NotifyRightTip(_source, _U("doorCreated"), 4000)
     else
@@ -67,7 +72,7 @@ RegisterServerEvent('bcc-doorlocks:ServDoorStatusSet', function(doorTable, locke
     lockedparam = 'false'
   end
   local param = { ['doorinfo'] = json.encode(doorTable), ['locked'] = lockedparam }
-  local _source, jobFound = source, false
+  local _source, jobFound, keyFound = source, false, false
   local character = VORPcore.getUser(_source).getUsedCharacter
   local result = MySQL.query.await("SELECT * FROM doorlocks WHERE doorinfo=@doorinfo", param)
   for k, v in pairs(json.decode(result[1].jobsallowedtoopen)) do
@@ -79,8 +84,16 @@ RegisterServerEvent('bcc-doorlocks:ServDoorStatusSet', function(doorTable, locke
   end
   if not jobFound then
     if VORPInv.getItemCount(_source, result[1].keyitem) >= 1 then
+      keyFound = true
       exports.oxmysql:execute("UPDATE doorlocks SET locked=@locked WHERE doorinfo=@doorinfo", param)
       TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false)
+    end
+  end
+  if not keyFound then
+    for k, v in pairs(json.decode(result[1].ids_allowed)) do
+      if character.charIdentifier == v then
+        TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false) break
+      end
     end
   end
 end)
