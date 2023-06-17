@@ -27,5 +27,7 @@ Locales["de_lang"] = {
     setKeyItem_desc = 'Setze ein Item, damit du die Tür auf und zuschließen kannst. Es muss dem Namen in der DB entsprechen!',
     confirm = 'Bestätigen',
     confirm_desc = 'Türerstellung beenden!',
-    InvalidInput = 'falsche Eingabe'
+    InvalidInput = 'falsche Eingabe',
+     setIds = "ID setzen",
+    setIds_desc = "Setze die feste ID einer Chars, damit er die Tür auf und zuschließen kann. Nach dem Eintrag kannst du eine weitere ID setzen."
 }
