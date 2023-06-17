@@ -20,7 +20,7 @@ function doorCreationMenu(door)
     TriggerEvent('bcc-doorlocks:MenuClose')
     MenuData.CloseAll()
 
-    local jobs, keyItem = {}, nil
+    local jobs, keyItem, ids = {}, nil, {}
     local myInput = {
         type = "enableinput",                                               -- don't touch
         inputType = "textarea",                                             -- input type
@@ -41,6 +41,7 @@ function doorCreationMenu(door)
         { label = _U("setJob"), value = 'setJob2', desc = _U("setJob_desc") },
         { label = _U("setJob"), value = 'setJob3', desc = _U("setJob_desc") },
         { label = _U("setKeyItem"), value = 'setKeyItem', desc = _U("setKeyItem_desc") },
+        { label = _U("setIds"), value = 'setIds', desc = _U("setIds_desc") },
         { label = _U("confirm"), value = 'confirm', desc = _U("confirm_desc") },
     }
 
@@ -86,8 +87,16 @@ function doorCreationMenu(door)
                         VORPcore.NotifyRightTip(_U("InvalidInput"), 4000)
                     end
                 end)
+            elseif data.current.value == 'setIds' then
+                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(result)
+                    if result ~= '' and result then
+                        table.insert(ids, tonumber(result))
+                    else
+                        VORPcore.NotifyRightTip(_U("InvalidInput"), 4000)
+                    end
+                end)
             elseif data.current.value == 'confirm' then
-                TriggerServerEvent('bcc-doorlocks:InsertIntoDB', door, jobs, keyItem)
+                TriggerServerEvent('bcc-doorlocks:InsertIntoDB', door, jobs, keyItem, ids)
                 inMenu = false
                 MenuData.CloseAll()
             end
