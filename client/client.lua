@@ -45,9 +45,18 @@ end)
 exports('createDoor', function()
     local door = getDoor('creation')
     doorCreationMenu(door)
+    return door
 end)
 
 exports('deleteDoor', function()
     local door = getDoor('deletion')
     TriggerServerEvent('bcc-doorlocks:DeleteDoor', door)
+end)
+
+exports('deleteSpecificDoor', function(doorTable)
+    for k,v in pairs(Doorhashes) do
+        if v[1] == doorTable[1] then
+            TriggerServerEvent('bcc-doorlocks:DeleteDoor', v) break
+        end
+    end
 end)

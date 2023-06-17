@@ -34,12 +34,19 @@
 ### Create door
 ```Lua
 RegisterCommand('test50', function()
-    local door = exports['bcc-doorlocks']:createDoor()
+    local door = exports['bcc-doorlocks']:createDoor() --will create a lock on the door and retrun the doors table from doorhashes.lua for future deletion or storage
 end)
 ```
 ### Delete Door
 ```Lua
 RegisterCommand('test50', function()
-    local door = exports['bcc-doorlocks']:deleteDoor()
+    exports['bcc-doorlocks']:deleteDoor() --will delete a door that you aim at and confirm
+end)
+```
+
+### Delete Specific Door
+```Lua
+RegisterCommand('test50', function()
+    exports['bcc-doorlocks']:deleteSpecificDoor(doorTable) --Door table is required this is retrieved when using the createdoor export
 end)
 ```
