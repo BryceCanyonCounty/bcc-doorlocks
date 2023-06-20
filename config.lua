@@ -1,7 +1,7 @@
 Config = {}
 
 Config.defaultlang = 'en_lang'
-Config.DevMode = false
+Config.DevMode = true
 
 ---------- Admin Configuration (Anyone listed here will be able to create and delete doors!) -----------
 Config.AdminSteamIds = {
@@ -14,6 +14,7 @@ Config.AdminSteamIds = {
 }
 
 Config.LockPicking = {
+    allowlockpicking = true, --If true players will be able to lockpick doors
     minigameSettings = {
         MaxAttemptsPerLock = 3,
         lockpickitem = 'lockpick',

@@ -25,8 +25,11 @@ RegisterCommand("deleteDoor", function() --command to delete a door
 end)
 
 ------ Locking, and unlocking area -----
-RegisterNetEvent('bcc-doorlocks:ClientSetDoorStatus', function(doorTable, locked, triggerLockHandler, deletion) --This will set doors locked when triggered
+RegisterNetEvent('bcc-doorlocks:ClientSetDoorStatus', function(doorTable, locked, triggerLockHandler, deletion, playerOpened) --This will set doors locked when triggered
     setDoorLockStatus(doorTable[1], locked, deletion)
+    if playerOpened then
+        playKeyAnim()
+    end
     if triggerLockHandler then
         lockAndUnlockDoorHandler(doorTable)
     end
