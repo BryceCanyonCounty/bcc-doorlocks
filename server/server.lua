@@ -24,7 +24,7 @@ RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyI
   exports.oxmysql:execute("SELECT * FROM doorlocks WHERE doorinfo=@doorinfo", param, function(result)
     if not result[1] then
       exports.oxmysql:execute("INSERT INTO doorlocks ( `jobsallowedtoopen`,`keyitem`,`locked`,`doorinfo`,`ids_allowed` ) VALUES ( @jobs,@key,@locked,@doorinfo,@ids )", param)
-      TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, true, true, false)
+      TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, true, true, false, false)
       VORPcore.NotifyRightTip(_source, _U("doorCreated"), 4000)
     else
       VORPcore.NotifyRightTip(_source, _U("doorExists"), 4000)
@@ -52,7 +52,7 @@ RegisterServerEvent('bcc-doorlocks:InitLoadDoorLocks', function() --this will lo
       lockVal = false
     end
     local doorTable = json.decode(v.doorinfo)
-    TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', _source, doorTable, lockVal, true, false)
+    TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', _source, doorTable, lockVal, true, false, false)
   end
 end)
 
@@ -60,11 +60,11 @@ RegisterServerEvent('bcc-doorlocks:DeleteDoor', function(doorTable) --Event For 
   local param = { ['doorinfo'] = json.encode(doorTable) }
   local _source = source
   exports.oxmysql:execute("DELETE FROM doorlocks WHERE doorinfo=@doorinfo", param)
-  TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, false, false, true)
+  TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, false, false, true, false)
   VORPcore.NotifyRightTip(_source, _U("doorDeleted"), 4000)
 end)
 
-RegisterServerEvent('bcc-doorlocks:ServDoorStatusSet', function(doorTable, locked) --used to sync the changing status of doors when a player locks or unlocks a door also checks thier job and for key item required to open it
+RegisterServerEvent('bcc-doorlocks:ServDoorStatusSet', function(doorTable, locked, lockpicked) --used to sync the changing status of doors when a player locks or unlocks a door also checks thier job and for key item required to open it
   local lockedparam = nil
   if locked then
     lockedparam = 'true'
@@ -79,22 +79,25 @@ RegisterServerEvent('bcc-doorlocks:ServDoorStatusSet', function(doorTable, locke
     if character.job == v then
       jobFound = true
       exports.oxmysql:execute("UPDATE doorlocks SET locked=@locked WHERE doorinfo=@doorinfo", param)
-      TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false)
+      TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true)
     end
   end
   if not jobFound then
     if VORPInv.getItemCount(_source, result[1].keyitem) >= 1 then
       keyFound = true
       exports.oxmysql:execute("UPDATE doorlocks SET locked=@locked WHERE doorinfo=@doorinfo", param)
-      TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false)
+      TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true)
     end
   end
   if not keyFound then
     for k, v in pairs(json.decode(result[1].ids_allowed)) do
       if character.charIdentifier == v then
-        TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false) break
+        TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true) break
       end
     end
+  end
+  if lockpicked then
+    TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true)
   end
 end)
 

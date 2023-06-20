@@ -103,7 +103,10 @@ function lockAndUnlockDoorHandler(doorTable) --function to lock doors
   local PromptGroup2 = VORPutils.Prompts:SetupPromptGroup()
   local firstprompt = PromptGroup:RegisterPrompt(_U("lockDoor"), 0x760A9C6F, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
   local firstprompt2 = PromptGroup2:RegisterPrompt(_U("unlockDoor"), 0x760A9C6F, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
-  local firstprompt3 = PromptGroup2:RegisterPrompt(_U("lockpickDoor"), 0xCEFD9220, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
+  local firstprompt3 = nil
+  if Config.LockPicking.allowlockpicking then
+    firstprompt3 = PromptGroup2:RegisterPrompt(_U("lockpickDoor"), 0xCEFD9220, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
+  end
   while true do
     Wait(5)
     local plc = GetEntityCoords(PlayerPedId())
@@ -121,8 +124,10 @@ function lockAndUnlockDoorHandler(doorTable) --function to lock doors
         if firstprompt2:HasCompleted() then
           TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false)
         end
-        if firstprompt3:HasCompleted() then
-          TriggerServerEvent('bcc-doorlocks:LockPickCheck', doorTable)
+        if Config.LockPicking.allowlockpicking then
+          if firstprompt3:HasCompleted() then
+            TriggerServerEvent('bcc-doorlocks:LockPickCheck', doorTable)
+          end
         end
       end
     elseif dist >= 30 then
@@ -156,9 +161,30 @@ RegisterNetEvent('bcc-doorlocks:lockpickingMinigame', function(doorTable)
   MiniGame.Start('lockpick', cfg, function(result)
     if result.unlocked then
       VORPcore.NotifyRightTip(_U("lockPicked"), 4000)
-      TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false)
+      TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false, true)
     else
       TriggerServerEvent('bcc-doorlocks:RemoveLockpick')
     end
   end)
 end)
+
+function playKeyAnim() --credit to justroy for the anims
+  local player = PlayerPedId()
+  local plc = GetEntityCoords(player)
+  local prop = CreateObject(joaat('P_KEY02X'), plc.x, plc.y, plc.z + 0.2, true, true, true)
+  local boneIndex = GetEntityBoneIndexByName(player, "SKEL_R_Finger12")
+  RequestAnimDict("script_common@jail_cell@unlock@key")
+  while not HasAnimDictLoaded('script_common@jail_cell@unlock@key') do
+    Wait(100)
+  end
+  TaskPlayAnim(player, 'script_common@jail_cell@unlock@key', 'action', 8.0, -8.0, 2500, 31, 0, true, 0, false, 0, false)
+  Wait(750)
+  AttachEntityToEntity(prop, player,boneIndex, 0.02, 0.0120, -0.00850, 0.024, -160.0, 200.0, true, true, false, true, 1, true)
+  while true do
+    Wait(50)
+    if not IsEntityPlayingAnim(player, "script_common@jail_cell@unlock@key", "action", 3) then
+      DeleteObject(prop)
+      ClearPedTasksImmediately(player) break
+    end
+  end
+end
