@@ -52,6 +52,7 @@ exports('createDoor', function()
     while not ExportDoorCreationFinished do
         Wait(100)
     end
+    ExportDoorCreationFinished = false
     return ExportDoorCreationId
 end)
 
