@@ -45,10 +45,15 @@ CreateThread(function()
 end)
 
 ----- Exports -------
+ExportDoorCreationId, ExportDoorCreationFinished = nil, false
 exports('createDoor', function()
     local door = getDoor('creation')
     doorCreationMenu(door)
-    return door
+    while not ExportDoorCreationFinished do
+        Wait(100)
+    end
+    ExportDoorCreationFinished = false
+    return ExportDoorCreationId
 end)
 
 exports('deleteDoor', function()
@@ -62,4 +67,9 @@ exports('deleteSpecificDoor', function(doorTable)
             TriggerServerEvent('bcc-doorlocks:DeleteDoor', v) break
         end
     end
+end)
+
+RegisterNetEvent('bcc-doorlocks:ExportCreationIdCatch', function(doorid)
+    ExportDoorCreationId = doorid
+    ExportDoorCreationFinished = true
 end)
