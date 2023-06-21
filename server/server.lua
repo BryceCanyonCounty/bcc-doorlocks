@@ -30,6 +30,11 @@ RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyI
       VORPcore.NotifyRightTip(_source, _U("doorExists"), 4000)
     end
   end)
+
+  local result = MySQL.query.await("SELECT * FROM doorlocks WHERE doorinfo=@doorinfo", param)
+  if #result >= 1 then
+    TriggerClientEvent('bcc-doorlocks:ExportCreationIdCatch', _source, result[1].doorid)
+  end
 end)
 
 RegisterServerEvent('bcc-doorlocks:AdminCheck', function() --admin checking against config settings
