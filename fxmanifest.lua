@@ -22,4 +22,15 @@ client_scripts {
   '/client/MenuSetup.lua'
 }
 
+dependency {
+  'vorp_core',
+  'vorp_inventory',
+  'vorp_utils',
+  'bcc-minigames',
+  'menuapi',
+  'vorp_inputs',
+  'vorp_character',
+  'bcc-utils'
+}
+
 version '1.0.1'
