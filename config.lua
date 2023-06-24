@@ -1,7 +1,10 @@
 Config = {}
 
-Config.defaultlang = 'en_lang'
-Config.DevMode = true
+Config.defaultlang = 'en_lang' --set your language here current supported languages: "en_lang" = english
+Config.DevMode = false --false on live server
+
+Config.CreateDoorCommand = 'createDoor' --command to create door
+Config.DeleteDoorCommand = 'deleteDoor' --command to delete door
 
 ---------- Admin Configuration (Anyone listed here will be able to create and delete doors!) -----------
 Config.AdminSteamIds = {

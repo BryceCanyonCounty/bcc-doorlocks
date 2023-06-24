@@ -1,3 +1,4 @@
+----- Pulling Essentials ----
 VORPcore = {}
 TriggerEvent("getCore", function(core)
   VORPcore = core

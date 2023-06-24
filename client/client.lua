@@ -10,14 +10,14 @@ RegisterNetEvent('bcc-doorlocks:AdminVarCatch', function(adminAllowed)
     admin = adminAllowed
 end)
 
-RegisterCommand('createDoor', function() --command to create a door
+RegisterCommand(Config.CreateDoorCommand, function() --command to create a door
     if admin then
         local door = getDoor('creation')
         doorCreationMenu(door)
     end
 end)
 
-RegisterCommand("deleteDoor", function() --command to delete a door
+RegisterCommand(Config.DeleteDoorCommand, function() --command to delete a door
     if admin then
         local door = getDoor('deletion')
         TriggerServerEvent('bcc-doorlocks:DeleteDoor', door)
@@ -73,3 +73,8 @@ RegisterNetEvent('bcc-doorlocks:ExportCreationIdCatch', function(doorid)
     ExportDoorCreationId = doorid
     ExportDoorCreationFinished = true
 end)
+
+--[[
+    --Sacred Comment Penis
+    8========D
+]]
