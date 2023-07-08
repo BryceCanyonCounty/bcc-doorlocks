@@ -25,10 +25,14 @@ RegisterCommand(Config.DeleteDoorCommand, function() --command to delete a door
 end)
 
 ------ Locking, and unlocking area -----
-RegisterNetEvent('bcc-doorlocks:ClientSetDoorStatus', function(doorTable, locked, triggerLockHandler, deletion, playerOpened) --This will set doors locked when triggered
+RegisterNetEvent('bcc-doorlocks:ClientSetDoorStatus', function(doorTable, locked, triggerLockHandler, deletion, playerOpened, _source) --This will set doors locked when triggered
     setDoorLockStatus(doorTable[1], locked, deletion)
     if playerOpened then
-        playKeyAnim()
+        local player = GetPlayerServerId(tonumber(PlayerId())) --credit vorp_admin
+        Wait(200)
+        if player == _source then
+            playKeyAnim()
+        end
     end
     if triggerLockHandler then
         lockAndUnlockDoorHandler(doorTable)
