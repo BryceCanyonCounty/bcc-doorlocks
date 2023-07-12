@@ -30,7 +30,7 @@ function doorCreationMenu(door)
         attributes = {
             inputHeader = "",                                               -- header
             type = "text",                                                  -- inputype text, number,date,textarea ETC
-            pattern = "[A-Za-z]+",                                          --  only numbers "[0-9]" | for letters only "[A-Za-z]+"
+            pattern = "[A-Za-z0-9]",                                          --  only numbers "[0-9]" | for letters only "[A-Za-z]+"
             title = _U("InvalidInput"),                                     -- if input doesnt match show this message
             style = "border-radius: 10px; background-color: ; border:none;" -- style
         }
