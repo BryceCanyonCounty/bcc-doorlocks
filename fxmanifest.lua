@@ -27,7 +27,6 @@ dependency {
   'vorp_inventory',
   'vorp_utils',
   'bcc-minigames',
-  'menuapi',
   'vorp_inputs',
   'vorp_character',
   'bcc-utils'
