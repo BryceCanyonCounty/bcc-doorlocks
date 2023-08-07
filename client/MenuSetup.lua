@@ -1,24 +1,5 @@
-TriggerEvent("menuapi:getData", function(call)
-  MenuData = call
-end)
-
-local inMenu = false
-AddEventHandler('bcc-doorlocks:MenuClose', function()
-    while inMenu do
-        Wait(5)
-        if IsControlJustReleased(0, 0x156F7119) then
-            if Inmenu then
-                Inmenu = false
-                MenuData.CloseAll() break
-            end
-        end
-    end
-end)
-
 function doorCreationMenu(door)
-    inMenu = true
-    TriggerEvent('bcc-doorlocks:MenuClose')
-    MenuData.CloseAll()
+    VORPMenu.CloseAll()
 
     local jobs, keyItem, ids = {}, nil, {}
     local myInput = {
@@ -45,13 +26,13 @@ function doorCreationMenu(door)
         { label = _U("confirm"), value = 'confirm', desc = _U("confirm_desc") },
     }
 
-    MenuData.Open('default', GetCurrentResourceName(), 'menuapi',
+    VORPMenu.Open('default', GetCurrentResourceName(), 'vorp_menu',
         {
             title = _U("menuTitle"),
             align = 'top-left',
             elements = elements,
         },
-        function(data)
+        function(data, menu)
             if data.current == 'backup' then
                 _G[data.trigger]()
             end
@@ -98,7 +79,10 @@ function doorCreationMenu(door)
             elseif data.current.value == 'confirm' then
                 TriggerServerEvent('bcc-doorlocks:InsertIntoDB', door, jobs, keyItem, ids)
                 inMenu = false
-                MenuData.CloseAll()
+                menu.close()
             end
+        end,
+        function(data, menu)
+            menu.close()
         end)
 end

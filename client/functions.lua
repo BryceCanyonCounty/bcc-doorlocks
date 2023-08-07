@@ -6,6 +6,10 @@ VORPutils = {}
 TriggerEvent("getUtils", function(utils)
   VORPutils = utils
 end)
+VORPMenu = {}
+TriggerEvent("vorp_menu:getData", function(cb)
+  VORPMenu = cb
+end)
 BccUtils = exports['bcc-utils'].initiate()
 MiniGame = exports['bcc-minigames'].initiate()
 
