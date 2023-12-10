@@ -21,7 +21,7 @@
 - Once you have created a door simply walk upto it and you will see some prompt options on the bottom right of your screen!
 
 ### Requirements
-- menuapi
+- VORP Menu
 - VORP inputs
 - VORP Character
 - VORP Inventory
