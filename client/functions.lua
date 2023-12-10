@@ -111,13 +111,15 @@ function lockAndUnlockDoorHandler(doorTable) --function to lock doors
   if Config.LockPicking.allowlockpicking then
     firstprompt3 = PromptGroup2:RegisterPrompt(_U("lockpickDoor"), 0xCEFD9220, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
   end
+  local radius = tonumber(Config.DoorRadius)
   while true do
     Wait(5)
-    local plc = GetEntityCoords(PlayerPedId())
-    local dist = GetDistanceBetweenCoords(doorTable[4], doorTable[5], doorTable[6], plc.x, plc.y, plc.z, true)
+    local playerPos = GetEntityCoords(PlayerPedId())
+    local doorPos = vector3(doorTable[4], doorTable[5], doorTable[6])
+    local dist = #(playerPos - doorPos)
     local doorStatus = DoorSystemGetDoorState(doorTable[1]) --we use this var to detect if its locked or not since door statuses are synced across clients this will allow us to sync the prompts for locking and unlocking without calling the server again
     if doorStatus == 2 then break end --using this as a way to detect if the door has been deleted and if so break the loop
-    if dist < 3 then
+    if dist <= radius then
       if doorStatus ~= 1 then
         PromptGroup:ShowGroup(_U("doorManage"))
         if firstprompt:HasCompleted() then
@@ -134,7 +136,7 @@ function lockAndUnlockDoorHandler(doorTable) --function to lock doors
           end
         end
       end
-    elseif dist >= 30 then
+    elseif dist >= 30 and dist < 100 then
       Wait(1500)
     elseif dist >= 100 then
       Wait(3000)
