@@ -1,88 +1,146 @@
 function doorCreationMenu(door)
-    VORPMenu.CloseAll()
-
     local jobs, keyItem, ids = {}, nil, {}
-    local myInput = {
-        type = "enableinput",                                               -- don't touch
-        inputType = "textarea",                                             -- input type
-        button = _U("confirm"),                                             -- button name
-        placeholder = '',                                      -- placeholder name
-        style = "block",                                                    -- don't touch
-        attributes = {
-            inputHeader = "",                                               -- header
-            type = "text",                                                  -- inputype text, number,date,textarea ETC
-            pattern = "[A-Za-z0-9]",                                          --  only numbers "[0-9]" | for letters only "[A-Za-z]+"
-            title = _U("InvalidInput"),                                     -- if input doesnt match show this message
-            style = "border-radius: 10px; background-color: ; border:none;" -- style
-        }
-    }
-
-    local elements = {
-        { label = _U("setJob"), value = 'setJob1', desc = _U("setJob_desc") },
-        { label = _U("setJob"), value = 'setJob2', desc = _U("setJob_desc") },
-        { label = _U("setJob"), value = 'setJob3', desc = _U("setJob_desc") },
-        { label = _U("setKeyItem"), value = 'setKeyItem', desc = _U("setKeyItem_desc") },
-        { label = _U("setIds"), value = 'setIds', desc = _U("setIds_desc") },
-        { label = _U("confirm"), value = 'confirm', desc = _U("confirm_desc") },
-    }
-
-    VORPMenu.Open('default', GetCurrentResourceName(), 'vorp_menu',
-        {
-            title = _U("menuTitle"),
-            align = 'top-left',
-            elements = elements,
+    local jobValue1, jobValue2, jobValue3, idValue  = '', '', '', ''
+    local doorMenu = FeatherMenu:RegisterMenu('feather:character:menu', {
+        top = '10%',
+        left = '2%',
+        ['720width'] = '500px',
+        ['1080width'] = '600px',
+        ['2kwidth'] = '700px',
+        ['4kwidth'] = '900px',
+        style = {
+            -- ['height'] = '500px'
+            -- ['border'] = '5px solid white',
+            -- ['background-image'] = 'none',
+            -- ['background-color'] = '#515A5A'
         },
-        function(data, menu)
-            if data.current == 'backup' then
-                _G[data.trigger]()
-            end
-            if data.current.value == 'setJob1' then
-                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(result)
-                    if result ~= '' and result then
-                        table.insert(jobs, result)
-                    else
-                        VORPcore.NotifyRightTip(_U("InvalidInput"), 4000)
-                    end
-                end)
-            elseif data.current.value == 'setJob2' then
-                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(result)
-                    if result ~= '' and result then
-                        table.insert(jobs, result)
-                    else
-                        VORPcore.NotifyRightTip(_U("InvalidInput"), 4000)
-                    end
-                end)
-            elseif data.current.value == 'setJob3' then
-                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(result)
-                    if result ~= '' and result then
-                        table.insert(jobs, result)
-                    else
-                        VORPcore.NotifyRightTip(_U("InvalidInput"), 4000)
-                    end
-                end)
-            elseif data.current.value == 'setKeyItem' then
-                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(result)
-                    if result ~= '' and result then
-                        keyItem = result
-                    else
-                        VORPcore.NotifyRightTip(_U("InvalidInput"), 4000)
-                    end
-                end)
-            elseif data.current.value == 'setIds' then
-                TriggerEvent("vorpinputs:advancedInput", json.encode(myInput), function(result)
-                    if result ~= '' and result then
-                        table.insert(ids, tonumber(result))
-                    else
-                        VORPcore.NotifyRightTip(_U("InvalidInput"), 4000)
-                    end
-                end)
-            elseif data.current.value == 'confirm' then
-                TriggerServerEvent('bcc-doorlocks:InsertIntoDB', door, jobs, keyItem, ids)
-                inMenu = false
-                menu.close()
-            end
+        draggable = false,
+        canclose = true
+    }, {
+        opened = function()
+            inMenu = true
         end,
-        function(data, menu)
-            menu.close()
-        end)
+        closed = function()
+            inMenu = false
+        end,
+    })
+    local mainPage = doorMenu:RegisterPage('bcc-doorlocks:mainPage')
+    mainPage:RegisterElement('header', {
+        value = _U('menuTitle'),
+        slot = "header",
+        style = {}
+    })
+    mainPage:RegisterElement('subheader', {
+        value = _U('menuSubTitle'),
+        slot = "header",
+        style = {}
+    })
+    mainPage:RegisterElement('line', {
+        slot = "header",
+        style = {}
+    })
+    mainPage:RegisterElement('input', {
+        label = _U("setJob"),
+        placeholder = _U('jobPlace'),
+        -- persist = false,
+        style = {
+            -- ['background-image'] = 'none',
+            -- ['background-color'] = '#E8E8E8',
+            -- ['color'] = 'black',
+            -- ['border-radius'] = '6px'
+        }
+    }, function(data)
+        jobValue1 = data.value
+        -- This gets triggered whenever the input value changes
+        table.insert(jobs, jobValue1)
+    end)
+    mainPage:RegisterElement('input', {
+        label = _U("setJob"),
+        placeholder = _U('jobPlace'),
+        -- persist = false,
+        style = {
+            -- ['background-image'] = 'none',
+            -- ['background-color'] = '#E8E8E8',
+            -- ['color'] = 'black',
+            -- ['border-radius'] = '6px'
+        }
+    }, function(data)
+        jobValue2 = data.value
+        -- This gets triggered whenever the input value changes
+        table.insert(jobs, jobValue2)
+    end)
+    mainPage:RegisterElement('input', {
+        label = _U("setJob"),
+        placeholder = _U('jobPlace'),
+        -- persist = false,
+        style = {
+            -- ['background-image'] = 'none',
+            -- ['background-color'] = '#E8E8E8',
+            -- ['color'] = 'black',
+            -- ['border-radius'] = '6px'
+        }
+    }, function(data)
+        jobValue3 = data.value
+        -- This gets triggered whenever the input value changes
+        table.insert(jobs, jobValue3)
+    end)
+    mainPage:RegisterElement('input', {
+        label = _U("setKeyItem"),
+        placeholder = _U('keyItem'),
+        -- persist = false,
+        style = {
+            -- ['background-image'] = 'none',
+            -- ['background-color'] = '#E8E8E8',
+            -- ['color'] = 'black',
+            -- ['border-radius'] = '6px'
+        }
+    }, function(data)
+        keyItem = data.value
+    end)
+    mainPage:RegisterElement('input', {
+        label = _U("setIds"),
+        placeholder = _U("idsPlace"),
+        -- persist = false,
+        style = {
+            -- ['background-image'] = 'none',
+            -- ['background-color'] = '#E8E8E8',
+            -- ['color'] = 'black',
+            -- ['border-radius'] = '6px'
+        }
+    }, function(data)
+        idValue = data.value
+        -- This gets triggered whenever the input value changes
+        table.insert(ids, tonumber(idValue))
+    end)
+    mainPage:RegisterElement('bottomline', {
+        slot = "content",
+        style = {}
+    })
+    mainPage:RegisterElement('button', {
+        label = _U("confirm"),
+        style = {},
+        sound = {
+            action = "SELECT",
+            soundset = "RDRO_Character_Creator_Sounds"
+        },
+    }, function()
+        TriggerServerEvent('bcc-doorlocks:InsertIntoDB', door, jobs, keyItem, ids)
+        doorMenu:Close({
+            sound = {
+                action = "SELECT",
+                soundset = "RDRO_Character_Creator_Sounds"
+            }
+        })
+    end)
+    if not inMenu then
+        doorMenu:Open({
+            -- cursorFocus = false,
+            -- menuFocus = false,
+            startupPage = mainPage,
+            sound = {
+                action = "SELECT",
+                soundset = "RDRO_Character_Creator_Sounds"
+            }
+        })
+    end
 end

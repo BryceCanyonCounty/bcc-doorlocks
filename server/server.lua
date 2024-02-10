@@ -39,11 +39,9 @@ end)
 
 RegisterServerEvent('bcc-doorlocks:AdminCheck', function() --admin checking against config settings
   local _source = source
-  local character = VORPcore.getUser(_source).getUsedCharacter
-  for k, v in pairs(Config.AdminSteamIds) do
-    if character.identifier == v.steamid then
-      TriggerClientEvent('bcc-doorlocks:AdminVarCatch', _source, true) break
-    end
+  local Character = VORPcore.getUser(source).getUsedCharacter 
+  if Character.group == Config.AdminGroup then
+    TriggerClientEvent('bcc-doorlocks:AdminVarCatch', _source, true)
   end
 end)
 
@@ -89,7 +87,8 @@ RegisterServerEvent('bcc-doorlocks:ServDoorStatusSet', function(doorTable, locke
   end
   if not jobFound then
     if not result[1].keyitem == "none" then
-      if VORPInv.getItemCount(_source, result[1].keyitem) >= 1 then
+      local keyCount = exports.vorp_inventory:getItemCount(_source, result[1].keyitem)
+      if keyCount >= 0 then
         keyFound = true
         exports.oxmysql:execute("UPDATE doorlocks SET locked=@locked WHERE doorinfo=@doorinfo", param)
         TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true, _source)
@@ -110,7 +109,8 @@ end)
 
 RegisterServerEvent('bcc-doorlocks:LockPickCheck', function(doorTable) --Used to check for lockpick before allowing minigame to players
   local _source = source
-  if VORPInv.getItemCount(_source, Config.LockPicking.minigameSettings.lockpickitem) >= 1 then
+  local itemCount = exports.vorp_inventory:getItemCount(_source, Config.LockPicking.minigameSettings.lockpickitem)
+  if itemCount >= 1 then
     TriggerClientEvent('bcc-doorlocks:lockpickingMinigame', _source, doorTable)
   else
     VORPcore.NotifyRightTip(_source, _U("noLockpick"), 4000)
@@ -119,7 +119,7 @@ end)
 
 RegisterServerEvent('bcc-doorlocks:RemoveLockpick', function() --Removing Lockpick
   local _source = source
-  VORPInv.subItem(_source, Config.LockPicking.minigameSettings.lockpickitem, 1)
+  exports.vorp_inventory:subItem(_source, Config.LockPicking.minigameSettings.lockpickitem, 1)
 end)
 
 BccUtils.Versioner.checkRelease(GetCurrentResourceName(), 'https://github.com/BryceCanyonCounty/bcc-doorlocks')

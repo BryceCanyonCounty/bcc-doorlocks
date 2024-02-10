@@ -9,6 +9,9 @@ Locales["en_lang"] = {
     doorNotShow = 'If the door you are aiming at is not showing up press "e" and stand beside it!',
     questionLocking = 'Lock this door Press "G"?',
     questionDeletion = 'Delete this door lock Press "G"?',
+    keyItemPlace = 'Set a key item',
+    jobPlace = "Insert Job name",
+    idsPlace = "Insert ID",
     doorDeleted = 'Door deleted!',
 
     ----Non admin text ----
@@ -18,16 +21,15 @@ Locales["en_lang"] = {
     noLockpick = 'You do not have a lockpick!',
     lockPicked = 'You picked the lock!',
     lockDoor = 'Lock Door',
+    createDoor = 'Create Door',
+    deleteDoor = 'Delete Door',
 
     ---- Door Creation Menu ---
     menuTitle = 'Door Creation',
+    menuSubTitle = 'Create a Lockable Door.',
     setJob = 'Set Job',
-    setJob_desc = 'Set a job that is able to lock and unlock the door! You must enter the job title!',
     setKeyItem = 'Key item',
-    setKeyItem_desc = 'Set a key item, that will be used to lock and unlock this door! You must enter the database name of the item!',
     confirm = 'Confirm',
-    confirm_desc = 'Finish door creation!',
     InvalidInput = 'Invalid Input',
     setIds = "Set Id's",
-    setIds_desc = "Set ID's allowed to lock and unlock the door. To set multiple Id's just choose this option again after you input an id."
 }

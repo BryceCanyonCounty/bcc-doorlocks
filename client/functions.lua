@@ -2,19 +2,18 @@ VORPcore = {}
 TriggerEvent("getCore", function(core)
   VORPcore = core
 end)
-VORPutils = {}
-TriggerEvent("getUtils", function(utils)
-  VORPutils = utils
-end)
-VORPMenu = {}
-TriggerEvent("vorp_menu:getData", function(cb)
-  VORPMenu = cb
-end)
+BccUtils = exports['bcc-utils'].initiate()
+FeatherMenu =  exports['feather-menu'].initiate()
 BccUtils = exports['bcc-utils'].initiate()
 MiniGame = exports['bcc-minigames'].initiate()
 
 function getDoor(type) --Funct to unlock door
   local modelAimedAt, door = {}, nil
+  local PromptGroup = BccUtils.Prompts:SetupPromptGroup()
+  local firstprompt = PromptGroup:RegisterPrompt(_U("createDoor"),0x760A9C6F, 1, 1, true, 'click', { timedeventhash = "MEDIUM_TIMED_EVENT" })
+  local PromptGroup2 = BccUtils.Prompts:SetupPromptGroup()
+  local secondprompt = PromptGroup2:RegisterPrompt(_U("deleteDoor"),0x760A9C6F, 1, 1, true, 'click', { timedeventhash = "MEDIUM_TIMED_EVENT" })
+
   if type == 'creation' then
     VORPcore.NotifyRightTip(_U("createDoorInstructions"), 4000)
   elseif type == 'deletion' then
@@ -27,7 +26,7 @@ function getDoor(type) --Funct to unlock door
     Wait(5)
     local id = PlayerId()
     if not type2 then
-      if IsControlJustReleased(0, 0xCEFD9220) then type2 = true end
+      if IsControlJustReleased(0, 0x760A9C6F) then type2 = true end
       if IsPlayerFreeAiming(id) then
         local bool, entity = GetEntityPlayerIsFreeAimingAt(id)
         if bool then
@@ -47,9 +46,15 @@ function getDoor(type) --Funct to unlock door
             end
             if door ~= nil then
               if type == 'creation' then
-                BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionLocking"))
+                PromptGroup:ShowGroup(_U("doorManage"))
+                if firstprompt:HasCompleted() then
+                  print("First Prompt Completed!")
+                end
               elseif type == 'deletion' then
-                BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionDeletion"))
+                PromptGroup2:ShowGroup(_U("doorManage"))
+                if secondprompt:HasCompleted() then
+                  print("First Prompt Completed!")
+                end
               end
               if IsControlJustReleased(0, 0x760A9C6F) then break end
             end
@@ -66,10 +71,16 @@ function getDoor(type) --Funct to unlock door
       if door ~= nil then
         if GetDistanceBetweenCoords(plc.x, plc.y, plc.z, door[4], door[5], door[6], true) < 1.5 then
           if type == 'creation' then
-            BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionLocking"))
-          elseif type == 'deletion' then
-            BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionDeletion"))
-          end
+                PromptGroup:ShowGroup(_U("doorManage"))
+                if firstprompt:HasCompleted() then
+                  print("First Prompt Completed!")
+                end
+              elseif type == 'deletion' then
+                PromptGroup2:ShowGroup("Door Locks")
+                if secondprompt:HasCompleted(_U("doorManage")) then
+                  print("First Prompt Completed!")
+                end
+              end
           if IsControlJustReleased(0, 0x760A9C6F) then break end
         else
           door = nil
@@ -103,8 +114,8 @@ function setDoorLockStatus(doorHash, locked, deletion) --function to lock and un
 end
 
 function lockAndUnlockDoorHandler(doorTable) --function to lock doors
-  local PromptGroup = VORPutils.Prompts:SetupPromptGroup()
-  local PromptGroup2 = VORPutils.Prompts:SetupPromptGroup()
+  local PromptGroup = BccUtils.Prompts:SetupPromptGroup()
+  local PromptGroup2 = BccUtils.Prompts:SetupPromptGroup()
   local firstprompt = PromptGroup:RegisterPrompt(_U("lockDoor"), 0x760A9C6F, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
   local firstprompt2 = PromptGroup2:RegisterPrompt(_U("unlockDoor"), 0x760A9C6F, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
   local firstprompt3 = nil
