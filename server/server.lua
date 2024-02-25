@@ -88,8 +88,8 @@ RegisterServerEvent('bcc-doorlocks:ServDoorStatusSet', function(doorTable, locke
     end
   end
   if not jobFound then
-    if not result[1].keyitem == "none" then
-      if VORPInv.getItemCount(_source, result[1].keyitem) >= 1 then
+    if result[1].keyitem ~= "none" then
+	if exports.vorp_inventory:getItemCount(_source, nil, tostring(result[1].keyitem)) >= 1 then
         keyFound = true
         exports.oxmysql:execute("UPDATE doorlocks SET locked=@locked WHERE doorinfo=@doorinfo", param)
         TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true, _source)
