@@ -22,19 +22,18 @@ RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyI
   local param = { ['jobs'] = json.encode(jobs), ['key'] = kItem, ['locked'] = 'true', ['doorinfo'] = json.encode(doorTable), ['ids'] = json.encode(pIds) }
   local _source = source
 
-  exports.oxmysql:execute("SELECT * FROM doorlocks WHERE doorinfo=@doorinfo", param, function(result)
-    if not result[1] then
-      exports.oxmysql:execute("INSERT INTO doorlocks ( `jobsallowedtoopen`,`keyitem`,`locked`,`doorinfo`,`ids_allowed` ) VALUES ( @jobs,@key,@locked,@doorinfo,@ids )", param)
-      TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, true, true, false, false)
-      VORPcore.NotifyRightTip(_source, _U("doorCreated"), 4000)
-    else
-      VORPcore.NotifyRightTip(_source, _U("doorExists"), 4000)
-    end
-    local result2 = MySQL.query.await("SELECT * FROM doorlocks WHERE doorinfo=@doorinfo", param)
-    if #result2 >= 1 then
-      TriggerClientEvent('bcc-doorlocks:ExportCreationIdCatch', _source, result2[1].doorid)
-    end
-  end)
+  local doesDoorExist = MySQL.query.await("SELECT * FROM doorlocks WHERE doorinfo=@doorinfo", param)
+  if #doesDoorExist <= 0 then
+    MySQL.query.await("INSERT INTO doorlocks ( `jobsallowedtoopen`,`keyitem`,`locked`,`doorinfo`,`ids_allowed` ) VALUES ( @jobs,@key,@locked,@doorinfo,@ids )", param)
+    TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, true, true, false, false)
+    VORPcore.NotifyRightTip(_source, _U("doorCreated"), 4000)
+  else
+    VORPcore.NotifyRightTip(_source, _U("doorExists"), 4000)
+  end
+  local result2 = MySQL.query.await("SELECT * FROM doorlocks WHERE doorinfo=@doorinfo", param)
+  if #result2 > 0 then
+    TriggerClientEvent('bcc-doorlocks:ExportCreationIdCatch', _source, result2[1].doorid)
+  end
 end)
 
 RegisterServerEvent('bcc-doorlocks:AdminCheck', function() --admin checking against config settings

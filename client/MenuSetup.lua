@@ -78,7 +78,6 @@ function doorCreationMenu(door)
                 end)
             elseif data.current.value == 'confirm' then
                 TriggerServerEvent('bcc-doorlocks:InsertIntoDB', door, jobs, keyItem, ids)
-                inMenu = false
                 menu.close()
             end
         end,
