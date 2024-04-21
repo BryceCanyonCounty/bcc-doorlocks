@@ -12,11 +12,11 @@ Locales["ro_lang"] = {
 
     ---- Text pentru non-administratori ----
     doorManage = 'Usa',
-    unlockDoor = 'Deschide Usa',
+    unlockDoor = 'Descuie Usa',
     lockpickDoor = 'Sparge Usa',
     noLockpick = 'Nu ai un unelte de spart incuietori!',
     lockPicked = 'Ai spart incuietoarea!',
-    lockDoor = 'Blocheaza Usa',
+    lockDoor = 'Incuie Usa',
 
     ---- Meniul de Creare a Usilor ---
     menuTitle = 'Creare Usa',
