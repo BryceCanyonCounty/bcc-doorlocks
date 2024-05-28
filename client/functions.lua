@@ -145,33 +145,45 @@ function lockAndUnlockDoorHandler(doorTable) --function to lock doors
 end
 
 RegisterNetEvent('bcc-doorlocks:lockpickingMinigame', function(doorTable)
-  local cfg = {
-    focus = true, -- Should minigame take nui focus
-    cursor = true, -- Should minigame have cursor  (required for lockpick)
-    maxattempts = Config.LockPicking.minigameSettings.MaxAttemptsPerLock, -- How many fail attempts are allowed before game over
-    threshold = Config.LockPicking.minigameSettings.difficulty, -- +- threshold to the stage degree (bigger number means easier)
-    hintdelay = Config.LockPicking.minigameSettings.hintdelay, --milliseconds delay on when the circle will shake to show lockpick is in the right position.
-    stages = {
-      {
-        deg = 25 -- 0-360 degrees
-      },
-      {
-        deg = 0 -- 0-360 degrees
-      },
-      {
-        deg = 300 -- 0-360 degrees
+  if Config.LockPicking.bcc_minigames then
+    local cfg = {
+      focus = true,                                                         -- Should minigame take nui focus
+      cursor = true,                                                        -- Should minigame have cursor  (required for lockpick)
+      maxattempts = Config.LockPicking.minigameSettings.MaxAttemptsPerLock, -- How many fail attempts are allowed before game over
+      threshold = Config.LockPicking.minigameSettings.difficulty,           -- +- threshold to the stage degree (bigger number means easier)
+      hintdelay = Config.LockPicking.minigameSettings.hintdelay,            --milliseconds delay on when the circle will shake to show lockpick is in the right position.
+      stages = {
+        {
+          deg = 25 -- 0-360 degrees
+        },
+        {
+          deg = 0 -- 0-360 degrees
+        },
+        {
+          deg = 300 -- 0-360 degrees
+        }
       }
     }
-  }
 
-  MiniGame.Start('lockpick', cfg, function(result)
-    if result.unlocked then
+    MiniGame.Start('lockpick', cfg, function(result)
+      if result.unlocked then
+        VORPcore.NotifyRightTip(_U("lockPicked"), 4000)
+        TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false, true)
+      else
+        TriggerServerEvent('bcc-doorlocks:RemoveLockpick')
+      end
+    end)
+  elseif Config.LockPicking.rsd_lockpick then
+    local stand = 1                                                   -- set 0 to stand, 1 to crouch
+    local attempt = 2                                                 -- number of attempt for one lockpick
+    local result = exports.rsd_lockpick:StartLockPick(stand, attempt) -- return "result lockpicking"
+    if result then
       VORPcore.NotifyRightTip(_U("lockPicked"), 4000)
       TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false, true)
     else
       TriggerServerEvent('bcc-doorlocks:RemoveLockpick')
     end
-  end)
+  end
 end)
 
 function playKeyAnim() --credit to justroy for the anims
