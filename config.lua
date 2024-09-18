@@ -16,8 +16,8 @@ Config.AdminSteamIds = {
 }
 
 Config.LockPicking = {
-    bcc_minigames = false,
-    rsd_lockpick = true,
+    bcc_minigames = true,
+    rsd_lockpick = false,
 
     allowlockpicking = true, -- If true players will be able to lockpick doors
     minigameSettings = {
