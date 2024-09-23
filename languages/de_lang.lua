@@ -29,5 +29,10 @@ Locales["de_lang"] = {
     confirm_desc = 'Türerstellung beenden!',
     InvalidInput = 'falsche Eingabe',
      setIds = "ID setzen",
-    setIds_desc = "Setze die feste ID einer Chars, damit er die Tür auf und zuschließen kann. Nach dem Eintrag kannst du eine weitere ID setzen."
+    setIds_desc = "Setze die feste ID einer Chars, damit er die Tür auf und zuschließen kann. Nach dem Eintrag kannst du eine weitere ID setzen.",
+    BackButton = "Back",
+    insertJob = 'Insert the job',
+    insertId = 'Insert the character ID',
+    insertKeyItem = 'Insert key Item',
+    Confirm = 'Confirm'
 }

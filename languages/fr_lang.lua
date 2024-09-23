@@ -29,6 +29,10 @@ Locales["fr_lang"] = {
     confirm_desc = 'Terminer la création de la porte !',
     InvalidInput = 'Entrée invalide',
     setIds = "Définir les ID",
-    setIds_desc = "Définir les ID autorisés à verrouiller et déverrouiller la porte. Pour définir plusieurs ID, choisissez à nouveau cette option après avoir saisi un ID."
-
+    setIds_desc = "Définir les ID autorisés à verrouiller et déverrouiller la porte. Pour définir plusieurs ID, choisissez à nouveau cette option après avoir saisi un ID.",
+    BackButton = "Back",
+    insertJob = 'Insert the job',
+    insertId = 'Insert the character ID',
+    insertKeyItem = 'Insert key Item',
+    Confirm = 'Confirm'
 }

@@ -12,8 +12,8 @@
 - Menu for creating the doors!
 
 # How to install
-- Run the sql file
 - ensure bcc-doorlocks in your resources file below all the required scripts
+- database will automatically run 
 
 # How it works!
 - Create a door by entering the /createDoor command then aim with a gun at the door you want put a lock on and press "G" you will then be created by the door creation menu!
@@ -21,12 +21,10 @@
 - Once you have created a door simply walk upto it and you will see some prompt options on the bottom right of your screen!
 
 ### Requirements
-- VORP Menu
-- VORP inputs
 - VORP Character
 - VORP Inventory
-- VORP utils
 - VORP Core
+- Feather Menu
 - bcc-utils
 - bcc-minigames
 

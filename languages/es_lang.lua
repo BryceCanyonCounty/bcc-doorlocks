@@ -29,5 +29,10 @@ Locales["es_lang"] = {
     confirm_desc = 'Terminar Creacion Puerta!',
     InvalidInput = 'Invalid Input',
     setIds = "Char ID",
-    setIds_desc = "Establecer Char ID permitidos para bloquear y desbloquear la puerta. Para configurar varias identificaciones, simplemente elija esta opción nuevamente después de ingresar una identificación."
+    setIds_desc = "Establecer Char ID permitidos para bloquear y desbloquear la puerta. Para configurar varias identificaciones, simplemente elija esta opción nuevamente después de ingresar una identificación.",
+    BackButton = "Back",
+    insertJob = 'Insert the job',
+    insertId = 'Insert the character ID',
+    insertKeyItem = 'Insert key Item',
+    Confirm = 'Confirm'
 }

@@ -1,3 +1,4 @@
+---------------------------------- ROMANA -------------------------------------------
 Locales["ro_lang"] = {
     -- Mesaje pentru locurile detinute
     failedToCreateDoor = 'Esec, nicio usa nu a fost gasita',
@@ -28,5 +29,10 @@ Locales["ro_lang"] = {
     confirm_desc = 'Finalizeaza crearea usii!',
     InvalidInput = 'Valoare Nevalida',
     setIds = "Seteaza ID-urile",
-    setIds_desc = "Seteaza ID-urile permise sa blocheze si sa deblocheze usa. Pentru a seta mai multe ID-uri, alege aceasta optiune din nou dupa ce introduci un ID."
+    setIds_desc = "Seteaza ID-urile permise sa blocheze si sa deblocheze usa. Pentru a seta mai multe ID-uri, alege aceasta optiune din nou dupa ce introduci un ID.",
+    BackButton = "Inapoi",
+    insertJob = 'Adauga un job',
+    insertId = 'Adauga ID-ul characteului',
+    insertKeyItem = 'Adauga o cheie',
+    Confirm = 'Confirma'
 }
