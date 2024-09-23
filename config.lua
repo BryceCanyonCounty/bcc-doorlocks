@@ -1,18 +1,21 @@
 Config = {}
 
 Config.defaultlang = 'en_lang' -- Set your language here current supported languages: "en_lang" = english
-Config.DevMode = false -- false on live server
+Config.DevMode = true -- false on live server
 
 Config.CreateDoorCommand = 'createDoor' -- Command to create door
 Config.DeleteDoorCommand = 'deleteDoor' -- Command to delete door
-
+Config.doorlocksDevCommand = 'doorlocksDev'
 Config.DoorRadius = 1.5 -- Maximum Distance from Door to Operate
 
----------- Admin Configuration (Anyone listed here will be able to create and delete doors!) ----------
-Config.AdminSteamIds = {
+---------- Admin Configuration (Any group listed here will be able to create and delete doors!) ----------
+Config.adminGroup = 'admin'
+
+-- These are jobs that will be able to create doors just like the admins
+Config.AllowedJobs = {
     {
-        steamid = 'steam:12004500000a00b', -- Insert players steam id
-    }, --to add more just copy this table paste and change id
+        jobname = '' --the job name
+    },
 }
 
 Config.LockPicking = {

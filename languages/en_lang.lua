@@ -29,5 +29,10 @@ Locales["en_lang"] = {
     confirm_desc = 'Finish door creation!',
     InvalidInput = 'Invalid Input',
     setIds = "Set Id's",
-    setIds_desc = "Set ID's allowed to lock and unlock the door. To set multiple Id's just choose this option again after you input an id."
+    setIds_desc = "Set ID's allowed to lock and unlock the door. To set multiple Id's just choose this option again after you input an id.",
+    BackButton = "Back",
+    insertJob = 'Insert the job',
+    insertId = 'Insert the character ID',
+    insertKeyItem = 'Insert key Item',
+    Confirm = 'Confirm'
 }

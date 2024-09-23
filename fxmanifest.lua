@@ -4,6 +4,10 @@ rdr3_warning "I acknowledge that this is a prerelease build of RedM, and I am aw
 
 lua54 "yes"
 
+author 'BCC Team'
+
+description 'Create doors for exiting houses in RedM!'
+
 shared_scripts {
   "config.lua",
   "locale.lua",
@@ -12,6 +16,7 @@ shared_scripts {
 
 server_scripts {
   '@oxmysql/lib/MySQL.lua',
+  '/server/dbUpdater.lua',
   "/server/server.lua"
 }
 
@@ -25,11 +30,10 @@ client_scripts {
 dependency {
   'vorp_core',
   'vorp_inventory',
-  'vorp_utils',
-  'bcc-minigames',
-  'vorp_inputs',
   'vorp_character',
-  'bcc-utils'
+  'feather-menu',
+  'bcc-utils',
+  'bcc-minigames'
 }
 
-version '1.0.6'
+version '1.0.7'
