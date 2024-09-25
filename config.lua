@@ -19,12 +19,10 @@ Config.AllowedJobs = {
 }
 
 Config.LockPicking = {
-    bcc_minigames = true,
-    rsd_lockpick = false,
-
+    minigameScript = 'bcc_minigames', -- bcc_minigames or rsd_lockpick
     allowlockpicking = true, -- If true players will be able to lockpick doors
     minigameSettings = {
-        MaxAttemptsPerLock = 3, -- Only bcc_minigames
+        MaxAttemptsPerLock = 3,
         lockpickitem = 'lockpick',
         difficulty = 50, -- Only bcc_minigames
         hintdelay = 500, -- Only bcc_minigames

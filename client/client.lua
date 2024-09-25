@@ -31,7 +31,7 @@ RegisterCommand(Config.CreateDoorCommand, function() -- Command to create a door
     else
         devPrint("CreateDoorCommand attempted but player is not admin.")
     end
-end)
+end, false)
 
 RegisterCommand(Config.DeleteDoorCommand, function() -- Command to delete a door
     if admin then
@@ -41,7 +41,7 @@ RegisterCommand(Config.DeleteDoorCommand, function() -- Command to delete a door
     else
         devPrint("DeleteDoorCommand attempted but player is not admin.")
     end
-end)
+end, false)
 
 ------ Locking, and unlocking area -----
 RegisterNetEvent('bcc-doorlocks:ClientSetDoorStatus', function(doorTable, locked, triggerLockHandler, deletion, playerOpened, _source)
@@ -70,7 +70,7 @@ CreateThread(function()
             devPrint(Config.doorlocksDevCommand .." command executed. Initializing door locks and admin check.")
             TriggerServerEvent('bcc-doorlocks:InitLoadDoorLocks')
             TriggerServerEvent('bcc-doorlocks:AdminCheck')
-        end)
+        end, false)
     end
 end)
 
