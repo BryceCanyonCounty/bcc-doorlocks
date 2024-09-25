@@ -197,7 +197,7 @@ end
 
 RegisterNetEvent('bcc-doorlocks:lockpickingMinigame', function(doorTable)
 	devPrint("lockpickingMinigame event triggered for doorTable: " .. json.encode(doorTable))
-	if Config.LockPicking.bcc_minigames then
+	if Config.LockPicking.minigameScript == 'bcc_minigames' then
 		local cfg = {
 			focus = true,
 			cursor = true,
@@ -221,9 +221,9 @@ RegisterNetEvent('bcc-doorlocks:lockpickingMinigame', function(doorTable)
 				TriggerServerEvent('bcc-doorlocks:RemoveLockpick')
 			end
 		end)
-	elseif Config.LockPicking.rsd_lockpick then
-		local stand = 1
-		local attempt = 2
+	elseif Config.LockPicking.minigameScript == 'rsd_lockpick' then
+		local stand = 1 -- set 0 to stand, 1 to crouch
+		local attempt = Config.LockPicking.minigameSettings.MaxAttemptsPerLock
 		local result = exports.rsd_lockpick:StartLockPick(stand, attempt)
 		if result then
 			devPrint("RSD lockpick succeeded.")
