@@ -3,7 +3,7 @@ local VORPcore = exports.vorp_core:GetCore()
 BccUtils = exports['bcc-utils'].initiate()
 
 -- Helper function for debugging in DevMode
-if Config.devMode then
+if Config.DevMode then
     function devPrint(message)
         print("^1[DEV MODE] ^4" .. message)
     end
@@ -11,35 +11,32 @@ else
     function devPrint(message) end -- No-op if DevMode is disabled
 end
 
------- DataBase Handling ------
 RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyItem, ids)
+    local _source = source
     devPrint("InsertIntoDB triggered with doorTable: " .. json.encode(doorTable))
-    local kItem, pIds
-    if keyItem ~= nil then
-        kItem = keyItem
-    else
-        kItem = 'none'
-    end
-    if ids ~= nil then
-        pIds = ids
-    else
-        pIds = 'none'
-    end
+
+    -- Ensure keyItem, jobs, and ids are properly set, with sensible defaults
+    local kItem = (keyItem ~= nil and keyItem ~= "") and keyItem or 'none'
+    local pIds = (#ids > 0 and ids ~= nil) and json.encode(ids) or '[]'
+    local allowedJobs = (#jobs > 0 and jobs ~= nil) and json.encode(jobs) or '[]'
+
     local param = {
-        ['jobs'] = json.encode(jobs),
+        ['jobs'] = allowedJobs,
         ['key'] = kItem,
         ['locked'] = 'true',
         ['doorinfo'] = json.encode(doorTable),
-        ['ids'] = json.encode(pIds)
+        ['ids'] = pIds
     }
-    local _source = source
 
+    -- Check if the door already exists in the database
     local doesDoorExist = MySQL.query.await("SELECT * FROM doorlocks WHERE doorinfo=@doorinfo", param)
     if #doesDoorExist <= 0 then
+        -- Insert the door if it doesn't exist
         MySQL.query.await(
             "INSERT INTO doorlocks ( `jobsallowedtoopen`,`keyitem`,`locked`,`doorinfo`,`ids_allowed` ) VALUES ( @jobs,@key,@locked,@doorinfo,@ids )",
-            param)
-        devPrint("Door inserted into DB with doorTable: " .. json.encode(doorTable))
+            param
+        )
+        devPrint("Door inserted into DB with jobs: " .. allowedJobs .. ", key: " .. kItem .. ", ids: " .. pIds)
         TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, true, true, false, false)
         VORPcore.NotifyRightTip(_source, _U("doorCreated"), 4000)
     else
@@ -47,6 +44,7 @@ RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyI
         VORPcore.NotifyRightTip(_source, _U("doorExists"), 4000)
     end
 
+    -- Fetch the door ID and send it back to the client
     local result2 = MySQL.query.await("SELECT * FROM doorlocks WHERE doorinfo=@doorinfo", param)
     if #result2 > 0 then
         devPrint("Creation ID caught for doorID: " .. result2[1].doorid)
