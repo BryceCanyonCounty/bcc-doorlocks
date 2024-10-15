@@ -3,6 +3,8 @@ Config = {}
 Config.defaultlang = 'en_lang' -- Set your language here current supported languages: "en_lang" = english
 Config.DevMode = true -- false on live server
 
+Config.CloseOnRestart = true
+
 Config.CreateDoorCommand = 'createDoor' -- Command to create door
 Config.DeleteDoorCommand = 'deleteDoor' -- Command to delete door
 Config.doorlocksDevCommand = 'doorlocksDev'
