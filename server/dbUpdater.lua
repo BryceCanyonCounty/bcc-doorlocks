@@ -20,4 +20,13 @@ CreateThread(function()
     -- Print a success message to the console
     print("Database table for \x1b[35m\x1b[1m*doorlocks*\x1b[0m created or updated \x1b[32msuccessfully\x1b[0m.")
 
+    if Config.CloseOnRestart then
+        print("-------------------------------------------------------------")
+        print("BCC-Doorlocks - Close on Restart \x1b[32mactive\x1b[0m.")
+        print("All open Doors will \x1b[35m\x1b[1mclosed\x1b[0m")
+        print("-------------------------------------------------------------")
+        MySQL.query.await([[
+            UPDATE doorlocks SET locked = 'true'
+        ]])
+    end
 end)
