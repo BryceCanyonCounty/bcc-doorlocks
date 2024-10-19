@@ -1,13 +1,17 @@
 Config = {}
 
 Config.defaultlang = 'en_lang' -- Set your language here current supported languages: "en_lang" = english
-Config.DevMode = true -- false on live server
 
-Config.CloseOnRestart = true
+Config.DevMode = false -- false on live server
+
+Config.CloseOnRestart = true -- Close all doors on server restart
 
 Config.CreateDoorCommand = 'createDoor' -- Command to create door
+
 Config.DeleteDoorCommand = 'deleteDoor' -- Command to delete door
+
 Config.doorlocksDevCommand = 'doorlocksDev'
+
 Config.DoorRadius = 1.5 -- Maximum Distance from Door to Operate
 
 ---------- Admin Configuration (Any group listed here will be able to create and delete doors!) ----------
