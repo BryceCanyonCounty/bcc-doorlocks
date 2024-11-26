@@ -3,7 +3,7 @@ local admin = false
 -- Helper function for debugging in DevMode
 if Config.DevMode then
     function devPrint(message)
-        print("^1[DEV MODE] ^4" .. message)
+        print("^1[DEV MODE] ^4" .. message .. "^0")
     end
 else
     function devPrint(message) end -- No-op if DevMode is disabled
@@ -23,54 +23,57 @@ RegisterNetEvent('bcc-doorlocks:AdminVarCatch', function(var) -- admin check cat
     end
 end)
 
-RegisterCommand(Config.CreateDoorCommand, function() -- Command to create a door
+RegisterCommand(Config.ManageDoorLocks, function() -- Command to create a door
     if admin then
-        devPrint("CreateDoorCommand executed by admin. Starting door creation process.")
-        local door = getDoor('creation')
-        doorCreationMenu(door)
+        manageDoorLocksMenu()
     else
         devPrint("CreateDoorCommand attempted but player is not admin.")
     end
 end, false)
 
-RegisterCommand(Config.DeleteDoorCommand, function() -- Command to delete a door
-    if admin then
-        devPrint("DeleteDoorCommand executed by admin. Starting door deletion process.")
-        local door = getDoor('deletion')
-        TriggerServerEvent('bcc-doorlocks:DeleteDoor', door)
-    else
-        devPrint("DeleteDoorCommand attempted but player is not admin.")
-    end
-end, false)
-
 ------ Locking, and unlocking area -----
-RegisterNetEvent('bcc-doorlocks:ClientSetDoorStatus', function(doorTable, locked, triggerLockHandler, deletion, playerOpened, _source)
-    devPrint("ClientSetDoorStatus event triggered. Door status: " .. tostring(locked) .. ", Deletion: " .. tostring(deletion))
-    setDoorLockStatus(doorTable[1], locked, deletion)
-    
-    if playerOpened then
-        local player = GetPlayerServerId(tonumber(PlayerId()))
-        Wait(200)
-        if player == _source then
-            devPrint("Player opened door, playing key animation.")
-            playKeyAnim()
+RegisterNetEvent('bcc-doorlocks:ClientSetDoorStatus',
+    function(doorTable, locked, triggerLockHandler, deletion, playerOpened, _source)
+        if not doorTable then
+            devPrint("^1Error: doorTable is nil in ClientSetDoorStatus event.^0")
+            return
         end
-    end
 
-    if triggerLockHandler then
-        devPrint("Lock and unlock door handler triggered for doorTable: " .. json.encode(doorTable))
-        lockAndUnlockDoorHandler(doorTable)
-    end
-end)
+        if type(doorTable) ~= "table" or not doorTable[1] then
+            devPrint("^1Error: doorTable is invalid or missing key [1] in ClientSetDoorStatus event. Data: " ..
+            tostring(doorTable) .. "^0")
+            return
+        end
+
+        devPrint("ClientSetDoorStatus event triggered. Door status: " ..
+        tostring(locked) .. ", Deletion: " .. tostring(deletion))
+
+        -- Ensure the first element of doorTable is valid before proceeding
+        setDoorLockStatus(doorTable[1], locked, deletion)
+
+        if playerOpened then
+            local player = GetPlayerServerId(tonumber(PlayerId()))
+            Wait(200)
+            if player == _source then
+                devPrint("Player opened door, playing key animation.")
+                playKeyAnim()
+            end
+        end
+
+        if triggerLockHandler then
+            devPrint("Lock and unlock door handler triggered for doorTable: " .. json.encode(doorTable))
+            lockAndUnlockDoorHandler(doorTable)
+        end
+    end)
 
 CreateThread(function()
     if Config.DevMode then
-        devPrint("DevMode is enabled, registering " ..Config.doorlocksDevCommand .." command.")
-        RegisterCommand(Config.doorlocksDevCommand, function()
-            devPrint(Config.doorlocksDevCommand .." command executed. Initializing door locks and admin check.")
-            TriggerServerEvent('bcc-doorlocks:InitLoadDoorLocks')
-            TriggerServerEvent('bcc-doorlocks:AdminCheck')
-        end, false)
+        devPrint("DevMode is enabled, registering " .. Config.doorlocksDevCommand .. " command.")
+        --RegisterCommand(Config.doorlocksDevCommand, function()
+        devPrint(Config.doorlocksDevCommand .. " command executed. Initializing door locks and admin check.")
+        TriggerServerEvent('bcc-doorlocks:InitLoadDoorLocks')
+        TriggerServerEvent('bcc-doorlocks:AdminCheck')
+        --end, false)
     end
 end)
 
@@ -103,6 +106,41 @@ exports('deleteSpecificDoor', function(doorTable)
             TriggerServerEvent('bcc-doorlocks:DeleteDoor', v)
             break
         end
+    end
+end)
+
+exports('addPlayerToDoor', function(playerId)
+    devPrint("Starting door creation and player addition process.")
+    local door = getDoor('creation') -- Call getDoor to handle the creation process
+
+    if not door then
+        devPrint("Door creation failed. No door selected or created.")
+        return false
+    end
+
+    -- Ensure playerId is valid
+    if not playerId then
+        devPrint("Invalid playerId provided.")
+        return false
+    end
+
+    -- Trigger the server event to add the player to the door
+    TriggerServerEvent('bcc-doorlocks:AddPlayerToDoor', door, playerId)
+
+    -- Wait for the door ID from the server
+    local doorId = nil
+    while not ExportDoorCreationFinished do
+        Wait(100)
+    end
+    doorId = ExportDoorCreationId
+    ExportDoorCreationFinished = false
+    TriggerServerEvent('bcc-doorlocks:InitLoadDoorLocks')
+    if doorId then
+        devPrint("Door creation finished. Door ID: " .. tostring(doorId))
+        return doorId
+    else
+        devPrint("^1Error: Failed to create door or retrieve door ID.^0")
+        return false
     end
 end)
 

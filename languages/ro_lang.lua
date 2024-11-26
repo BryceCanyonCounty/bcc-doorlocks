@@ -1,4 +1,3 @@
----------------------------------- ROMANA -------------------------------------------
 Locales["ro_lang"] = {
     -- Mesaje pentru locurile detinute
     failedToCreateDoor = 'Esec, nicio usa nu a fost gasita',
@@ -8,14 +7,14 @@ Locales["ro_lang"] = {
     deleteDoorInstructions = 'Tinteste usa pe care doresti sa o stergi si apasa "G" pentru a o sterge!',
     doorNotShow = 'Daca usa la care te uiti nu apare, apasa "E" si stai lânga ea!',
     questionLocking = 'Inchizi aceasta usa? Apasa "G"?',
-    questionDeletion = 'stergi blocarea aceastei usi? Apasa "G"?',
+    questionDeletion = 'Stergi blocarea aceastei usi? Apasa "G"?',
     doorDeleted = 'Usa stearsa!',
 
     ---- Text pentru non-administratori ----
     doorManage = 'Usa',
     unlockDoor = 'Descuie Usa',
     lockpickDoor = 'Sparge Usa',
-    noLockpick = 'Nu ai un unelte de spart incuietori!',
+    noLockpick = 'Nu ai unelte de spart incuietori!',
     lockPicked = 'Ai spart incuietoarea!',
     lockDoor = 'Incuie Usa',
 
@@ -32,7 +31,53 @@ Locales["ro_lang"] = {
     setIds_desc = "Seteaza ID-urile permise sa blocheze si sa deblocheze usa. Pentru a seta mai multe ID-uri, alege aceasta optiune din nou dupa ce introduci un ID.",
     BackButton = "Inapoi",
     insertJob = 'Adauga un job',
-    insertId = 'Adauga ID-ul characteului',
+    insertId = 'Adauga ID-ul characterului',
     insertKeyItem = 'Adauga o cheie',
-    Confirm = 'Confirma'
+    Confirm = 'Confirma',
+    manageDoorlocksTitle = "Administrare Usi",
+    viewDoorlocks = "Vezi Usi Blocate",
+    editDoorlock = "Editeaza Usile Blocate",
+    deleteDoorlock = "Sterge Usile Blocate",
+    createDoor = "Creeaza Usa Blocata",
+    createNewDoor = "Creeaza Usa Noua",
+    doorOptions = "Optiuni Usa - ID Usa: ",
+    removeDoor = "Sterge Usa",
+    doorRemoved = "Usa stearsa cu succes",
+    manageDoors = "Administreaza Usi",
+    closeButton = "Inchide",
+    allDoors = 'Toate usile',
+    manageDoorid = 'Administreaza Usa ID: ',
+    editDoorid = 'Editeaza Usa',
+    editingDoorId = 'Editare Usa ID: ',
+    editAllowedJobs = "Editeaza Joburile Permise",
+    updateAllowedJobs = "Actualizeaza Joburile Permise pentru Usa ID: ",
+    insertAlowedJob = "Introdu Job Permis",
+    typeJobName = "Scrie numele jobului... (ex: politie)",
+    jobNameCannotbeEmpty = "Numele jobului nu poate fi gol.",
+    jobAlreadyExists = "Jobul exista deja in lista permisa.",
+    allowedJobUpdated = "Joburile permise au fost actualizate cu succes.",
+    allowedJobFailed = "Eroare la actualizarea joburilor permise.",
+
+    -- Editare Cheie
+    editKeyItem = "Editeaza Elementul Cheie",
+    updateKeyItem = "Actualizeaza Elementul Cheie pentru Usa ID: ",
+    typeKeyItem = "Scrie numele elementului cheie...",
+    keyItemNameCannotBeEmpty = "Numele elementului cheie nu poate fi gol.",
+    keyItemUpdated = "Elementul cheie a fost actualizat cu succes.",
+    keyItemFailed = "Eroare la actualizarea elementului cheie.",
+
+    -- Editare ID-uri Permise
+    editAllowedIDs = "Editeaza ID-urile Permise",
+    updateAllowedIDs = "Actualizeaza ID-urile Permise pentru Usa ID: ",
+    insertAllowedID = "Introdu ID Permis",
+    typeCharacterID = "Scrie ID-ul personajului (numeric)...",
+    allowedIDCannotBeEmpty = "ID-ul permis nu poate fi gol.",
+    allowedIDExists = "ID-ul personajului exista deja in lista permisa.",
+    allowedIDsUpdated = "ID-urile permise au fost actualizate cu succes.",
+    allowedIDsFailed = "Eroare la actualizarea ID-urilor permise.",
+
+    -- Confirmare Stergere
+    confirmDeleteTitle = "Confirma Stergerea Usii",
+    confirmDelete = "Confirma",
+    cancel = "Anuleaza",
 }

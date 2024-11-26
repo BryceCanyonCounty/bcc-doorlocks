@@ -1,5 +1,5 @@
-local VORPcore = exports.vorp_core:GetCore()
-local FeatherMenu =  exports['feather-menu'].initiate()
+VORPcore = exports.vorp_core:GetCore()
+FeatherMenu = exports['feather-menu'].initiate()
 BccUtils = exports['bcc-utils'].initiate()
 MiniGame = exports['bcc-minigames'].initiate()
 
@@ -13,116 +13,127 @@ else
 end
 
 BCCDoorLocksMenu = FeatherMenu:RegisterMenu("bcc:doorlocks:mainmenu",
-    {
-        top = "5%",
-        left = "5%",
-        ["720width"] = "500px",
-        ["1080width"] = "600px",
-        ["2kwidth"] = "700px",
-        ["4kwidth"] = "900px",
-        style = {},
-        contentslot = {
-            style = {
-                ["height"] = "450px",
-                ["min-height"] = "250px"
-            }
-        },
-        draggable = true
-    },
-    {
-        opened = function()
-            DisplayRadar(false)
-        end,
-        closed = function()
-            DisplayRadar(true)
-        end
-    }
+	{
+		top = "5%",
+		left = "5%",
+		["720width"] = "500px",
+		["1080width"] = "600px",
+		["2kwidth"] = "700px",
+		["4kwidth"] = "900px",
+		style = {},
+		contentslot = {
+			style = {
+				["height"] = "450px",
+				["min-height"] = "250px"
+			}
+		},
+		draggable = true
+	},
+	{
+		opened = function()
+			DisplayRadar(false)
+		end,
+		closed = function()
+			DisplayRadar(true)
+		end
+	}
 )
 
-function getDoor(type) -- Function to unlock door
-	devPrint("getDoor function called with type: " .. type)
+function getDoor(type)
+	devPrint("getDoor function called with type: " .. tostring(type))
 	local modelAimedAt, door = {}, nil
+
+	-- Instructions based on type
 	if type == 'creation' then
-		devPrint("Creation mode selected")
+		devPrint("Creation mode selected.")
 		VORPcore.NotifyRightTip(_U("createDoorInstructions"), 4000)
 	elseif type == 'deletion' then
-		devPrint("Deletion mode selected")
+		devPrint("Deletion mode selected.")
 		VORPcore.NotifyRightTip(_U("deleteDoorInstructions"), 4000)
+	else
+		devPrint("^1Error: Invalid type provided to getDoor function.^0")
+		return nil
 	end
-	VORPcore.NotifyRightTip(_U("doorNotShow"), 4000)
 
 	local type2 = false
 	while true do
 		Wait(5)
-		local id = PlayerId()
+		local playerId = PlayerId()
+		local ped = PlayerPedId()
+
+		-- Check for `G` key release
 		if not type2 then
-			if IsControlJustReleased(0, 0xCEFD9220) then type2 = true end
-			if IsPlayerFreeAiming(id) then
-				local bool, entity = GetEntityPlayerIsFreeAimingAt(id)
-				if bool then
+			if IsControlJustReleased(0, 0x760A9C6F) then -- `G` key
+				devPrint("Key `G` released.")
+				type2 = true
+			end
+
+			-- Handle free aim detection
+			if IsPlayerFreeAiming(playerId) then
+				local hasEntity, entity = GetEntityPlayerIsFreeAimingAt(playerId)
+				if hasEntity then
 					local model = GetEntityModel(entity)
 					if model ~= nil and model ~= 0 then
-						devPrint("Model found: " .. model)
+						devPrint("Entity model detected: " .. tostring(model))
 						for k, v in pairs(Doorhashes) do
 							if v[2] == model then
 								table.insert(modelAimedAt, v)
 							end
 						end
 
-						for k, v in pairs(modelAimedAt) do
+						-- Match door hash with entity coordinates
+						for _, v in ipairs(modelAimedAt) do
 							local aimedEntityCoords = GetEntityCoords(entity)
 							if GetDistanceBetweenCoords(v[4], v[5], v[6], aimedEntityCoords.x, aimedEntityCoords.y, aimedEntityCoords.z, true) < 1 then
 								door = v
 								break
 							end
 						end
-						if door ~= nil then
-							if type == 'creation' then
-								devPrint("Creation prompt for door displayed.")
-								BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionLocking"))
-							elseif type == 'deletion' then
-								devPrint("Deletion prompt for door displayed.")
-								BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionDeletion"))
+
+						if door then
+							devPrint("Door found.")
+							BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionLocking"))
+							if IsControlJustReleased(0, 0x760A9C6F) then -- Confirm with `G` key
+								devPrint("Confirmed door selection with `G` key.")
+								break
 							end
-							if IsControlJustReleased(0, 0x760A9C6F) then break end
 						end
 					end
 				end
 			end
 		else
-			local plc = GetEntityCoords(PlayerPedId())
-			for k, v in pairs(Doorhashes) do
-				if GetDistanceBetweenCoords(plc.x, plc.y, plc.z, v[4], v[5], v[6], true) < 1.5 then
+			-- Handle proximity-based detection
+			local playerCoords = GetEntityCoords(ped)
+			for _, v in pairs(Doorhashes) do
+				if GetDistanceBetweenCoords(playerCoords.x, playerCoords.y, playerCoords.z, v[4], v[5], v[6], true) < 1.5 then
 					door = v
 					break
 				end
 			end
-			if door ~= nil then
-				if GetDistanceBetweenCoords(plc.x, plc.y, plc.z, door[4], door[5], door[6], true) < 1.5 then
-					if type == 'creation' then
-						devPrint("Creation prompt displayed for nearby door.")
-						BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionLocking"))
-					elseif type == 'deletion' then
-						devPrint("Deletion prompt displayed for nearby door.")
-						BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionDeletion"))
-					end
-					if IsControlJustReleased(0, 0x760A9C6F) then break end
-				else
-					door = nil
+
+			if door then
+				devPrint("Proximity-based door found.")
+				BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionLocking"))
+				if IsControlJustReleased(0, 0x760A9C6F) then
+					devPrint("Confirmed proximity-based door selection with `G` key.")
+					break
 				end
 			end
 		end
 	end
 
-	if door ~= nil then
-		devPrint("Door found: " .. json.encode(door))
+	if door then
+		devPrint("Returning door: " .. json.encode(door))
 		return door
+	else
+		devPrint("^1Error: No door found or selected.^0")
+		return nil
 	end
 end
 
 function setDoorLockStatus(doorHash, locked, deletion) -- Function to lock and unlock doors
 	devPrint("setDoorLockStatus called with doorHash: " ..
-	doorHash .. ", locked: " .. tostring(locked) .. ", deletion: " .. tostring(deletion))
+		doorHash .. ", locked: " .. tostring(locked) .. ", deletion: " .. tostring(deletion))
 	Citizen.InvokeNative(0xD99229FE93B46286, doorHash, 1, 1, 0, 0, 0, 0)
 	local doorstatus = DoorSystemGetDoorState(doorHash)
 	if deletion then
