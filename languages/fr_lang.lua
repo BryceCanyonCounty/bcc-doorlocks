@@ -1,4 +1,4 @@
----------------------------------- ENGLISH -------------------------------------------
+---------------------------------- FRENCH -------------------------------------------
 Locales["fr_lang"] = {
     --Place Hold
     failedToCreateDoor = 'Échec, aucune porte trouvée',
@@ -34,5 +34,49 @@ Locales["fr_lang"] = {
     insertJob = 'Insert the job',
     insertId = 'Insert the character ID',
     insertKeyItem = 'Insert key Item',
-    Confirm = 'Confirm'
+    Confirm = 'Confirm',
+    manageDoorlocksTitle = "Door Management",
+    viewDoorlocks = "View Doorlocks",
+    editDoorlock = "Edit Doorlocks",
+    deleteDoorlock = "Delete Doorlocks",
+    createDoor = "Create Door",
+    createNewDoor = "Create New Door",
+    doorOptions = "Door Options - Door ID: ",
+    removeDoor = "Remove Door",
+    doorRemoved = "Door removed successfully",
+    manageDoors = "Manage Doors",
+    closeButton = "Close",
+    allDoors = 'All doors',
+    manageDoorid = 'Manage Door ID: ',
+    editDoorid = 'Edit Door',
+    editingDoorId = 'Editing Door ID: ',
+    editAllowedJobs = "Edit Allowed Jobs",
+    updateAllowedJobs = "Update Allowed Jobs for Door ID: ",
+    insertAlowedJob = "Insert Allowed Job",
+    typeJobName = "Type job name... (e.g., police)",
+    jobNameCannotbeEmpty = "Job name cannot be empty.",
+    jobAlreadyExists = "Job already exists in the allowed list.",
+    allowedJobUpdated = "Allowed jobs updated successfully.",
+    allowedJobFailed = "Failed to update allowed jobs.",
+
+    -- Edit Key Item
+    editKeyItem = "Edit Key Item",
+    updateKeyItem = "Update Key Item for Door ID: ",
+    typeKeyItem = "Type key item name...",
+    keyItemNameCannotBeEmpty = "Key item name cannot be empty.",
+    keyItemUpdated = "Key item updated successfully.",
+    keyItemFailed = "Failed to update key item.",
+
+    -- Edit Allowed IDs
+    editAllowedIDs = "Edit Allowed IDs",
+    updateAllowedIDs = "Update Allowed IDs for Door ID: ",
+    insertAllowedID = "Insert Allowed ID",
+    typeCharacterID = "Type character ID (numeric)...",
+    allowedIDCannotBeEmpty = "Allowed ID cannot be empty.",
+    allowedIDExists = "Character ID already exists in the allowed list.",
+    allowedIDsUpdated = "Allowed IDs updated successfully.",
+    allowedIDsFailed = "Failed to update allowed IDs.",
+    confirmDeleteTitle = "Confirm Door Deletion",
+    confirmDelete = "Confirm",
+    cancel = "Cancel",
 }

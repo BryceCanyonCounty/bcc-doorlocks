@@ -17,6 +17,7 @@ shared_scripts {
 server_scripts {
   '@oxmysql/lib/MySQL.lua',
   '/server/dbUpdater.lua',
+  '/server/API.lua',
   "/server/server.lua"
 }
 
@@ -36,4 +37,4 @@ dependency {
   'bcc-minigames'
 }
 
-version '1.0.9'
+version '1.1.0'

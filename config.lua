@@ -6,9 +6,7 @@ Config.DevMode = false -- false on live server
 
 Config.CloseOnRestart = true -- Close all doors on server restart
 
-Config.CreateDoorCommand = 'createDoor' -- Command to create door
-
-Config.DeleteDoorCommand = 'deleteDoor' -- Command to delete door
+Config.ManageDoorLocks = 'ManageDoorLocks'
 
 Config.doorlocksDevCommand = 'doorlocksDev'
 
