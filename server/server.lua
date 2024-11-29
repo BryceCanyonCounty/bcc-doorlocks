@@ -428,4 +428,13 @@ RegisterServerEvent('bcc-doorlocks:RemoveLockpick', function()
     end)
 end)
 
+function table.contains(tbl, value)
+    for _, v in pairs(tbl) do
+        if v == value then
+            return true
+        end
+    end
+    return false
+end
+
 BccUtils.Versioner.checkFile(GetCurrentResourceName(), 'https://github.com/BryceCanyonCounty/bcc-doorlocks')
