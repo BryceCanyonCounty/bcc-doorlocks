@@ -5,7 +5,7 @@ BccUtils = exports['bcc-utils'].initiate()
 -- Helper function for debugging in DevMode
 if Config.DevMode then
     function devPrint(message)
-        print("^1[DEV MODE] ^4" .. message)
+        print("^1[DEV MODE] ^4" .. message .. "^0")
     end
 else
     function devPrint(message) end -- No-op if DevMode is disabled
@@ -50,26 +50,40 @@ RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyI
         TriggerClientEvent('bcc-doorlocks:ExportCreationIdCatch', _source, result2[1].doorid)
     end
 end)
-
 RegisterServerEvent("bcc-doorlocks:AdminCheck", function()
     local _source = source
     local user = VORPcore.getUser(_source)
     if not user then return end
-    local character = user.getUsedCharacter
-    local admin = false
-    devPrint("AdminCheck triggered for user: " .. character.identifier)
 
+    local character = user.getUsedCharacter
+    if not character then
+        devPrint("Character object is nil for source: " .. tostring(_source))
+        return 
+    end
+
+    devPrint("AdminCheck triggered for user: " .. (character.charIdentifier or "Unknown Identifier"))
+
+    local admin = false
+
+    -- Check if the user is an admin
     if character.group == Config.adminGroup then
+        admin = true
         TriggerClientEvent('bcc-doorlocks:AdminVarCatch', _source, true)
     end
 
+    -- Check if the user has allowed jobs
     if not admin then
-        for k, v in pairs(Config.AllowedJobs) do
+        for _, v in pairs(Config.AllowedJobs) do
             if character.job == v.jobname then
+                admin = true
                 TriggerClientEvent('bcc-doorlocks:AdminVarCatch', _source, true)
                 break
             end
         end
+    end
+
+    if not admin then
+        devPrint("User is not an admin or in an allowed job.")
     end
 end)
 
