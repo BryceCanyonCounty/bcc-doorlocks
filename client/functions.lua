@@ -157,6 +157,7 @@ function setDoorLockStatus(doorHash, locked, deletion) -- Function to lock and u
 	end
 end
 
+local DoorHashes = {}
 function lockAndUnlockDoorHandler(doorTable) -- Function to lock/unlock doors
 	devPrint("lockAndUnlockDoorHandler called with doorTable: " .. json.encode(doorTable))
 	local PromptGroup = BccUtils.Prompts:SetupPromptGroup()
@@ -170,6 +171,14 @@ function lockAndUnlockDoorHandler(doorTable) -- Function to lock/unlock doors
 		firstprompt3 = PromptGroup2:RegisterPrompt(_U("lockpickDoor"), 0xCEFD9220, 1, 1, true, 'hold',
 			{ timedeventhash = "MEDIUM_TIMED_EVENT" })
 	end
+
+	local doorHash = doorTable[1]
+	if not DoorHashes[doorHash] then
+		DoorHashes[doorHash] = true
+	else
+		return
+	end
+
 	local radius = tonumber(Config.DoorRadius)
 	while true do
 		Wait(5)

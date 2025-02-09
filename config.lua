@@ -32,3 +32,8 @@ Config.LockPicking = {
         hintdelay = 500, -- Only bcc_minigames
     },
 }
+
+-- Resolve custom maping doors conflicts
+Config.SpooniEmerald = true -- If you are using spooni's emerald map and have door conflicts set this to true
+Config.SpooniManzanitaPost = true -- If you are using spooni's manzanita post map and have door conflicts set this to true
+Config.SpooniPronghornRanch = true -- If you are using spooni's pronghorn ranch map and have door conflicts set this to true
