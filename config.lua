@@ -37,3 +37,7 @@ Config.LockPicking = {
 Config.SpooniEmerald = true -- If you are using spooni's emerald map and have door conflicts set this to true
 Config.SpooniManzanitaPost = true -- If you are using spooni's manzanita post map and have door conflicts set this to true
 Config.SpooniPronghornRanch = true -- If you are using spooni's pronghorn ranch map and have door conflicts set this to true
+
+-- Seed jail doors behavior: when true, seed jail doors from `client/doorhashes.lua` on start.
+-- If false, seeding will still run automatically on first-run when the `doorlocks` table is empty.
+Config.SeedJailDoorsOnStart = false
