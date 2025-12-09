@@ -57,7 +57,7 @@ function getDoor(type)
 
 	local type2 = false
 	while true do
-		Wait(5)
+		Wait(0)
 		local playerId = PlayerId()
 		local ped = PlayerPedId()
 
@@ -181,7 +181,7 @@ function lockAndUnlockDoorHandler(doorTable) -- Function to lock/unlock doors
 
 	local radius = tonumber(Config.DoorRadius)
 	while true do
-		Wait(5)
+		Wait(0)
 		local playerPos = GetEntityCoords(PlayerPedId())
 		local doorPos = vector3(doorTable[4], doorTable[5], doorTable[6])
 		local dist = #(playerPos - doorPos)
