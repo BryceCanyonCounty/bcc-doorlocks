@@ -1,57 +1,16 @@
-VORPcore = exports.vorp_core:GetCore()
-FeatherMenu = exports['feather-menu'].initiate()
-BccUtils = exports['bcc-utils'].initiate()
-MiniGame = exports['bcc-minigames'].initiate()
-
--- Helper function for debugging in DevMode
-if Config.DevMode then
-	function devPrint(message)
-		print("^1[DEV MODE] ^4" .. message)
-	end
-else
-	function devPrint(message) end -- No-op if DevMode is disabled
-end
-
-BCCDoorLocksMenu = FeatherMenu:RegisterMenu("bcc:doorlocks:mainmenu",
-	{
-		top = "5%",
-		left = "5%",
-		["720width"] = "500px",
-		["1080width"] = "600px",
-		["2kwidth"] = "700px",
-		["4kwidth"] = "900px",
-		style = {},
-		contentslot = {
-			style = {
-				["height"] = "450px",
-				["min-height"] = "250px"
-			}
-		},
-		draggable = true
-	},
-	{
-		opened = function()
-			DisplayRadar(false)
-		end,
-		closed = function()
-			DisplayRadar(true)
-		end
-	}
-)
-
-function getDoor(type)
-	devPrint("getDoor function called with type: " .. tostring(type))
+function GetDoor(type)
+	DBG:Info("GetDoor function called with type: " .. tostring(type))
 	local modelAimedAt, door = {}, nil
 
 	-- Instructions based on type
 	if type == 'creation' then
-		devPrint("Creation mode selected.")
-		VORPcore.NotifyRightTip(_U("createDoorInstructions"), 4000)
+		DBG:Info("Creation mode selected.")
+		Core.NotifyRightTip(_U("createDoorInstructions"), 4000)
 	elseif type == 'deletion' then
-		devPrint("Deletion mode selected.")
-		VORPcore.NotifyRightTip(_U("deleteDoorInstructions"), 4000)
+		DBG:Info("Deletion mode selected.")
+		Core.NotifyRightTip(_U("deleteDoorInstructions"), 4000)
 	else
-		devPrint("^1Error: Invalid type provided to getDoor function.^0")
+		DBG:Error("Invalid type provided to GetDoor function.")
 		return nil
 	end
 
@@ -64,7 +23,7 @@ function getDoor(type)
 		-- Check for `G` key release
 		if not type2 then
 			if IsControlJustReleased(0, 0x760A9C6F) then -- `G` key
-				devPrint("Key `G` released.")
+				DBG:Info("Key `G` released.")
 				type2 = true
 			end
 
@@ -74,7 +33,7 @@ function getDoor(type)
 				if hasEntity then
 					local model = GetEntityModel(entity)
 					if model ~= nil and model ~= 0 then
-						devPrint("Entity model detected: " .. tostring(model))
+						DBG:Info("Entity model detected: " .. tostring(model))
 						for k, v in pairs(Doorhashes) do
 							if v[2] == model then
 								table.insert(modelAimedAt, v)
@@ -91,10 +50,10 @@ function getDoor(type)
 						end
 
 						if door then
-							devPrint("Door found.")
+							DBG:Info("Door found.")
 							BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionLocking"))
 							if IsControlJustReleased(0, 0x760A9C6F) then -- Confirm with `G` key
-								devPrint("Confirmed door selection with `G` key.")
+								DBG:Info("Confirmed door selection with `G` key.")
 								break
 							end
 						end
@@ -112,10 +71,10 @@ function getDoor(type)
 			end
 
 			if door then
-				devPrint("Proximity-based door found.")
+				DBG:Info("Proximity-based door found.")
 				BccUtils.Misc.DrawText3D(door[4], door[5], door[6] + 1, _U("questionLocking"))
 				if IsControlJustReleased(0, 0x760A9C6F) then
-					devPrint("Confirmed proximity-based door selection with `G` key.")
+					DBG:Info("Confirmed proximity-based door selection with `G` key.")
 					break
 				end
 			end
@@ -123,34 +82,34 @@ function getDoor(type)
 	end
 
 	if door then
-		devPrint("Returning door: " .. json.encode(door))
+		DBG:Info("Returning door: " .. json.encode(door))
 		return door
 	else
-		devPrint("^1Error: No door found or selected.^0")
+		DBG:Error("No door found or selected.")
 		return nil
 	end
 end
 
-function setDoorLockStatus(doorHash, locked, deletion) -- Function to lock and unlock doors
-	devPrint("setDoorLockStatus called with doorHash: " ..
+function SetDoorLockStatus(doorHash, locked, deletion) -- Function to lock and unlock doors
+	DBG:Info("SetDoorLockStatus called with doorHash: " ..
 		doorHash .. ", locked: " .. tostring(locked) .. ", deletion: " .. tostring(deletion))
 	Citizen.InvokeNative(0xD99229FE93B46286, doorHash, 1, 1, 0, 0, 0, 0)
 	local doorstatus = DoorSystemGetDoorState(doorHash)
 	if deletion then
-		devPrint("Deleting door with doorHash: " .. doorHash)
+		DBG:Info("Deleting door with doorHash: " .. doorHash)
 		Citizen.InvokeNative(0x6BAB9442830C7F53, doorHash, 2)
 		Wait(1000)
 		Citizen.InvokeNative(0x6BAB9442830C7F53, doorHash, 0)
 	else
 		if locked then
 			if doorstatus ~= 1 then
-				devPrint("Locking door.")
+				DBG:Info("Locking door.")
 				Citizen.InvokeNative(0x6BAB9442830C7F53, doorHash, 1)
 				DoorSystemSetOpenRatio(doorHash, 0.0, true)
 			end
 		else
 			if doorstatus ~= 0 then
-				devPrint("Unlocking door.")
+				DBG:Info("Unlocking door.")
 				Citizen.InvokeNative(0x6BAB9442830C7F53, doorHash, 0)
 			end
 		end
@@ -158,18 +117,15 @@ function setDoorLockStatus(doorHash, locked, deletion) -- Function to lock and u
 end
 
 local DoorHashes = {}
-function lockAndUnlockDoorHandler(doorTable) -- Function to lock/unlock doors
-	devPrint("lockAndUnlockDoorHandler called with doorTable: " .. json.encode(doorTable))
-	local PromptGroup = BccUtils.Prompts:SetupPromptGroup()
-	local PromptGroup2 = BccUtils.Prompts:SetupPromptGroup()
-	local firstprompt = PromptGroup:RegisterPrompt(_U("lockDoor"), 0x760A9C6F, 1, 1, true, 'hold',
-		{ timedeventhash = "MEDIUM_TIMED_EVENT" })
-	local firstprompt2 = PromptGroup2:RegisterPrompt(_U("unlockDoor"), 0x760A9C6F, 1, 1, true, 'hold',
-		{ timedeventhash = "MEDIUM_TIMED_EVENT" })
-	local firstprompt3 = nil
+function LockAndUnlockDoorHandler(doorTable) -- Function to lock/unlock doors
+	DBG:Info("LockAndUnlockDoorHandler called with doorTable: " .. json.encode(doorTable))
+	local LockGroup = BccUtils.Prompts:SetupPromptGroup()
+	local UnlockGroup = BccUtils.Prompts:SetupPromptGroup()
+	local LockPrompt = LockGroup:RegisterPrompt(_U("lockDoor"), Config.Keys.lock, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
+	local UnlockPrompt = UnlockGroup:RegisterPrompt(_U("unlockDoor"), Config.Keys.lock, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
+	local LockpickPrompt = nil
 	if Config.LockPicking.allowlockpicking then
-		firstprompt3 = PromptGroup2:RegisterPrompt(_U("lockpickDoor"), 0xCEFD9220, 1, 1, true, 'hold',
-			{ timedeventhash = "MEDIUM_TIMED_EVENT" })
+		LockpickPrompt = UnlockGroup:RegisterPrompt(_U("lockpickDoor"), Config.Keys.lockpick, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
 	end
 
 	local doorHash = doorTable[1]
@@ -189,20 +145,20 @@ function lockAndUnlockDoorHandler(doorTable) -- Function to lock/unlock doors
 		if doorStatus == 2 then break end
 		if dist <= radius then
 			if doorStatus ~= 1 then
-				PromptGroup:ShowGroup(_U("doorManage"))
-				if firstprompt:HasCompleted() then
-					devPrint("Locking door via prompt.")
-					TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, true)
+				LockGroup:ShowGroup(_U("doorManage"))
+				if LockPrompt:HasCompleted() then
+                    DBG:Info("Locking door via prompt.")
+                    TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, true, false)
 				end
 			elseif doorStatus ~= 0 then
-				PromptGroup2:ShowGroup(_U("doorManage"))
-				if firstprompt2:HasCompleted() then
-					devPrint("Unlocking door via prompt.")
-					TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false)
+				UnlockGroup:ShowGroup(_U("doorManage"))
+				if UnlockPrompt:HasCompleted() then
+					DBG:Info("Unlocking door via prompt.")
+					TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false, false)
 				end
 				if Config.LockPicking.allowlockpicking then
-					if firstprompt3:HasCompleted() then
-						devPrint("Lockpicking door via prompt.")
+					if LockpickPrompt and LockpickPrompt:HasCompleted() then
+						DBG:Info("Lockpicking door via prompt.")
 						TriggerServerEvent('bcc-doorlocks:LockPickCheck', doorTable)
 					end
 				end
@@ -216,29 +172,53 @@ function lockAndUnlockDoorHandler(doorTable) -- Function to lock/unlock doors
 end
 
 RegisterNetEvent('bcc-doorlocks:lockpickingMinigame', function(doorTable)
-	devPrint("lockpickingMinigame event triggered for doorTable: " .. json.encode(doorTable))
+	DBG:Info("lockpickingMinigame event triggered for doorTable: " .. json.encode(doorTable))
 	if Config.LockPicking.minigameScript == 'bcc_minigames' then
+        -- Determine degrees based on config
+        local degrees = {}
+        if Config.LockPicking.minigameSettings.randomDegrees then
+
+            -- Use random degrees
+            degrees = {
+                math.random(0, 360),
+                math.random(0, 360),
+                math.random(0, 360)
+            }
+        else
+            -- Use static degrees from config
+            degrees = Config.LockPicking.minigameSettings.staticDegrees or { 90, 180, 270 } -- Fallback if not configured
+        end
+
 		local cfg = {
 			focus = true,
 			cursor = true,
-			maxattempts = Config.LockPicking.minigameSettings.MaxAttemptsPerLock,
-			threshold = Config.LockPicking.minigameSettings.difficulty,
-			hintdelay = Config.LockPicking.minigameSettings.hintdelay,
+			maxattempts = Config.LockPicking.minigameSettings.MaxAttemptsPerLock or 3,
+			threshold = Config.LockPicking.minigameSettings.difficulty or 20,
+			hintdelay = Config.LockPicking.minigameSettings.hintdelay or 100,
 			stages = {
-				{ deg = 25 },
-				{ deg = 0 },
-				{ deg = 300 }
-			}
+                {
+                    deg = degrees[1] -- 0-360 degrees
+                },
+                {
+                    deg = degrees[2] -- 0-360 degrees
+                },
+                {
+                    deg = degrees[3] -- 0-360 degrees
+                }
+            }
 		}
 
 		MiniGame.Start('lockpick', cfg, function(result)
-			if result.unlocked then
-				devPrint("Lockpick succeeded.")
-				VORPcore.NotifyRightTip(_U("lockPicked"), 4000)
+            local success = (type(result) == 'table' and result.unlocked) or (result == true)
+			if success then
+				DBG:Info("Lockpick succeeded.")
+				Core.NotifyRightTip(_U("lockPicked"), 4000)
 				TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false, true)
+                return
 			else
-				devPrint("Lockpick failed.")
+				DBG:Info("Lockpick failed.")
 				TriggerServerEvent('bcc-doorlocks:RemoveLockpick')
+                return
 			end
 		end)
 	elseif Config.LockPicking.minigameScript == 'rsd_lockpick' then
@@ -246,35 +226,51 @@ RegisterNetEvent('bcc-doorlocks:lockpickingMinigame', function(doorTable)
 		local attempt = Config.LockPicking.minigameSettings.MaxAttemptsPerLock
 		local result = exports.rsd_lockpick:StartLockPick(stand, attempt)
 		if result then
-			devPrint("RSD lockpick succeeded.")
-			VORPcore.NotifyRightTip(_U("lockPicked"), 4000)
+			DBG:Info("RSD lockpick succeeded.")
+			Core.NotifyRightTip(_U("lockPicked"), 4000)
 			TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false, true)
 		else
-			devPrint("RSD lockpick failed.")
+			DBG:Info("RSD lockpick failed.")
 			TriggerServerEvent('bcc-doorlocks:RemoveLockpick')
 		end
 	end
 end)
 
-function playKeyAnim() -- Play key animation
-	devPrint("Playing key animation.")
-	local player = PlayerPedId()
-	local plc = GetEntityCoords(player)
-	local prop = CreateObject(joaat('P_KEY02X'), plc.x, plc.y, plc.z + 0.2, true, true, true)
-	local boneIndex = GetEntityBoneIndexByName(player, "SKEL_R_Finger12")
-	RequestAnimDict("script_common@jail_cell@unlock@key")
-	while not HasAnimDictLoaded('script_common@jail_cell@unlock@key') do
-		Wait(100)
-	end
-	TaskPlayAnim(player, 'script_common@jail_cell@unlock@key', 'action', 8.0, -8.0, 2500, 31, 0, true, 0, false, 0, false)
+local function LoadAnim(animDict)
+    DBG.Info(string.format('Loading animation dictionary: %s', tostring(animDict)))
+    if HasAnimDictLoaded(animDict) then return end
+
+    RequestAnimDict(animDict)
+    local timeout = 10000
+    local startTime = GetGameTimer()
+
+    while not HasAnimDictLoaded(animDict) do
+        if GetGameTimer() - startTime > timeout then
+            print('Failed to load dictionary:', animDict)
+            return
+        end
+        Wait(10)
+    end
+    DBG.Info(string.format('Animation dictionary loaded: %s', tostring(animDict)))
+end
+
+function PlayKeyAnim() -- Play key animation
+	DBG:Info("Playing key animation.")
+	local playerPed = PlayerPedId()
+	local playerCoords = GetEntityCoords(playerPed)
+	local prop = CreateObject(joaat('P_KEY02X'), playerCoords.x, playerCoords.y, playerCoords.z + 0.2, true, true, true)
+	local boneIndex = GetEntityBoneIndexByName(playerPed, "SKEL_R_Finger12")
+    local animDict = "script_common@jail_cell@unlock@key"
+    local animName = "action"
+    LoadAnim(animDict)
+	TaskPlayAnim(playerPed, animDict, animName, 8.0, -8.0, 2500, 31, 0, true, false, false)
 	Wait(750)
-	AttachEntityToEntity(prop, player, boneIndex, 0.02, 0.0120, -0.00850, 0.024, -160.0, 200.0, true, true, false, true,
-		1, true)
+	AttachEntityToEntity(prop, playerPed, boneIndex, 0.02, 0.0120, -0.00850, 0.024, -160.0, 200.0, true, true, false, true, 1, true, false, false)
 	while true do
 		Wait(50)
-		if not IsEntityPlayingAnim(player, "script_common@jail_cell@unlock@key", "action", 3) then
+		if not IsEntityPlayingAnim(playerPed, animDict, animName, 3) then
 			DeleteObject(prop)
-			ClearPedTasksImmediately(player)
+			ClearPedTasksImmediately(playerPed)
 			break
 		end
 	end
