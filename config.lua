@@ -5,7 +5,7 @@ Config.defaultlang = 'en_lang' -- Set your language here
 
 -- Enable to see debug messages in the client and server consoles
 Config.devMode = {
-    active = true -- Default: false / DO NOT Enable on Live Server
+    active = false -- Default: false / DO NOT Enable on Live Server
 }
 -----------------------------------------------------
 
