@@ -1,4 +1,3 @@
----------------------------------- ENGLISH -------------------------------------------
 Locales["en_lang"] = {
     --Place Hold
     failedToCreateDoor = 'Failed no door found',
@@ -76,6 +75,8 @@ Locales["en_lang"] = {
     allowedIDExists = "Character ID already exists in the allowed list.",
     allowedIDsUpdated = "Allowed IDs updated successfully.",
     allowedIDsFailed = "Failed to update allowed IDs.",
+
+    -- Confirm Deletion
     confirmDeleteTitle = "Confirm Door Deletion",
     confirmDelete = "Confirm",
     cancel = "Cancel",
