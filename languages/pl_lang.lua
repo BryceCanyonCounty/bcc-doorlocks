@@ -75,6 +75,8 @@ Locales["pl_lang"] = {
     allowedIDExists = 'ID postaci już istnieje na liście dozwolonych.',
     allowedIDsUpdated = 'Dozwolone ID zostały pomyślnie zaktualizowane.',
     allowedIDsFailed = 'Nie udało się zaktualizować dozwolonych ID.',
+
+    -- Potwierdzenie usunięcia
     confirmDeleteTitle = 'Potwierdzenie usunięcia drzwi',
     confirmDelete = 'Potwierdź',
     cancel = 'Anuluj',
