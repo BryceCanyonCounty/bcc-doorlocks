@@ -1,4 +1,3 @@
----------------------------------- Spanish ---------- Made by Magico
 Locales["es_lang"] = {
     --Place Hold
     failedToCreateDoor = 'No se encontró ninguna puerta',
@@ -76,6 +75,8 @@ Locales["es_lang"] = {
     allowedIDExists = "Character ID already exists in the allowed list.",
     allowedIDsUpdated = "Allowed IDs updated successfully.",
     allowedIDsFailed = "Failed to update allowed IDs.",
+
+    -- Confirm Deletion
     confirmDeleteTitle = "Confirm Door Deletion",
     confirmDelete = "Confirm",
     cancel = "Cancel",
