@@ -1,21 +1,11 @@
------ Pulling Essentials -----
-local VORPcore = exports.vorp_core:GetCore()
-BccUtils = exports['bcc-utils'].initiate()
-
--- Helper function for debugging in DevMode
-if Config.DevMode then
-    function devPrint(message)
-        print("^1[DEV MODE] ^4" .. message .. "^0")
+RegisterNetEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyItem, ids)
+    local src = source
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return
     end
-else
-    function devPrint(message) end -- No-op if DevMode is disabled
-end
-
-RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyItem, ids)
-    local _source = source
-    local user = VORPcore.getUser(_source)
-    if not user then return end
-    devPrint("InsertIntoDB triggered with doorTable: " .. json.encode(doorTable))
+    DBG:Info("InsertIntoDB triggered with doorTable: " .. json.encode(doorTable))
 
     -- Ensure keyItem, jobs, and ids are properly set, with sensible defaults
     local kItem = (keyItem ~= nil and keyItem ~= "") and keyItem or 'none'
@@ -24,8 +14,8 @@ RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyI
     -- Check if the door already exists in the database
     local doesDoorExist = MySQL.query.await('SELECT * FROM `doorlocks` WHERE `doorinfo` = ?', { json.encode(doorTable) })
     if not doesDoorExist then
-        devPrint("Database query failed while checking if the door exists.")
-        VORPcore.NotifyRightTip(_source, _U("dbError"), 4000)
+        DBG:Error("Database query failed while checking if the door exists.")
+        Core.NotifyRightTip(src, _U("dbError"), 4000)
         return
     end
     if #doesDoorExist <= 0 then
@@ -33,65 +23,76 @@ RegisterServerEvent('bcc-doorlocks:InsertIntoDB', function(doorTable, jobs, keyI
         MySQL.query.await(
             'INSERT INTO `doorlocks` (`jobsallowedtoopen`, `keyitem`, `locked`, `doorinfo`, `ids_allowed`) VALUES (?, ?, ?, ?, ?)',
             { allowedJobs, kItem, 'true', json.encode(doorTable), pIds })
-        devPrint("Door inserted into DB with jobs: " .. allowedJobs .. ", key: " .. kItem .. ", ids: " .. pIds)
+        DBG:Success("Door inserted into DB with jobs: " .. allowedJobs .. ", key: " .. kItem .. ", ids: " .. pIds)
 
         TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, true, true, false, false)
 
-        VORPcore.NotifyRightTip(_source, _U("doorCreated"), 4000)
+        Core.NotifyRightTip(src, _U("doorCreated"), 4000)
     else
-        devPrint("Door already exists in DB")
-        VORPcore.NotifyRightTip(_source, _U("doorExists"), 4000)
+        DBG:Warning("Door already exists in DB")
+        Core.NotifyRightTip(src, _U("doorExists"), 4000)
     end
 
     -- Fetch the door ID and send it back to the client
     local result2 = MySQL.query.await('SELECT * FROM `doorlocks` WHERE `doorinfo` = ?', { json.encode(doorTable) })
     if #result2 > 0 then
-        devPrint("Creation ID caught for doorID: " .. result2[1].doorid)
-        TriggerClientEvent('bcc-doorlocks:ExportCreationIdCatch', _source, result2[1].doorid)
+        DBG:Info("Creation ID caught for doorID: " .. result2[1].doorid)
+        TriggerClientEvent('bcc-doorlocks:ExportCreationIdCatch', src, result2[1].doorid)
     end
 end)
-RegisterServerEvent("bcc-doorlocks:AdminCheck", function()
-    local _source = source
-    local user = VORPcore.getUser(_source)
-    if not user then return end
 
-    local character = user.getUsedCharacter
-    if not character then
-        devPrint("Character object is nil for source: " .. tostring(_source))
-        return 
-    end
-
-    devPrint("AdminCheck triggered for user: " .. (character.charIdentifier or "Unknown Identifier"))
-
-    local admin = false
-
-    -- Check if the user is an admin
-    if character.group == Config.adminGroup then
-        admin = true
-        TriggerClientEvent('bcc-doorlocks:AdminVarCatch', _source, true)
-    end
-
-    -- Check if the user has allowed jobs
-    if not admin then
-        for _, v in pairs(Config.AllowedJobs) do
-            if character.job == v.jobname then
-                admin = true
-                TriggerClientEvent('bcc-doorlocks:AdminVarCatch', _source, true)
-                break
-            end
+local function CheckAdmin(character)
+    -- Check if the user has an allowed group
+    for _, group in pairs(Config.AllowedGroups) do
+        if character.group == group.groupName then
+            return true
         end
     end
 
-    if not admin then
-        devPrint("User is not an admin or in an allowed job.")
+    -- Check if the user has an allowed job
+    for _, job in pairs(Config.AllowedJobs) do
+        if character.job == job.jobName then
+            return true
+        end
     end
+
+    return false
+end
+
+RegisterNetEvent("bcc-doorlocks:AdminCheck", function()
+    local src = source
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return
+    end
+
+    local character = user.getUsedCharacter
+    if not character then
+        DBG:Error("Character object is nil for source: " .. tostring(src))
+        return
+    end
+
+    local charId = character.charIdentifier
+    DBG:Info("AdminCheck triggered for character: " .. (charId or "Unknown Identifier"))
+
+    if CheckAdmin(character) then
+        TriggerClientEvent('bcc-doorlocks:AdminVarCatch', src, true)
+        DBG:Info("Character " .. charId .. " is an admin for door management.")
+        return
+    end
+
+    DBG:Warning("Character " .. charId .. " is not in an allowed group or job.")
 end)
 
-RegisterServerEvent('bcc-doorlocks:InitLoadDoorLocks', function()
-    local _source = source
-    local user = VORPcore.getUser(_source)
-    if not user then return end
-    devPrint("InitLoadDoorLocks triggered by source: " .. _source)
+RegisterNetEvent('bcc-doorlocks:InitLoadDoorLocks', function()
+    local src = source
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return
+    end
+    DBG:Info("InitLoadDoorLocks triggered by source: " .. src)
 
     local result = MySQL.query.await('SELECT * FROM `doorlocks`')
 
@@ -104,25 +105,27 @@ RegisterServerEvent('bcc-doorlocks:InitLoadDoorLocks', function()
         end
 
         local doorTable = json.decode(v.doorinfo)
-        devPrint("Setting door status for doorTable: " .. json.encode(doorTable) .. " Locked: " .. tostring(lockVal))
-        TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', _source, doorTable, lockVal, true, false, false)
+        DBG:Info("Setting door status for doorTable: " .. json.encode(doorTable) .. " Locked: " .. tostring(lockVal))
+        TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', src, doorTable, lockVal, true, false, false)
     end
 end)
 
 RegisterNetEvent('bcc-doorlocks:AddPlayerToDoor', function(door, playerId)
-    local _source = source
-    local user = VORPcore.getUser(_source)
-    if not user then return end
+    local src = source
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return
+    end
     local character = user.getUsedCharacter
     local playerId = character.charIdentifier
     -- Validate inputs
     if not door or not playerId then
-        print("^1[bcc-doorlocks] Error: Invalid door or playerId in AddPlayerToDoor event.^0")
+        DBG:Error("Invalid door or playerId in AddPlayerToDoor event.")
         return
     end
 
-    print("^2[bcc-doorlocks] Processing AddPlayerToDoor. Door: " ..
-        json.encode(door) .. ", Player ID: " .. tostring(playerId) .. "^0")
+    DBG:Info("Processing AddPlayerToDoor. Door: " .. json.encode(door) .. ", Player ID: " .. tostring(playerId))
 
     -- Check if the door already exists
     local result = MySQL.query.await("SELECT * FROM doorlocks WHERE doorinfo = ?", { json.encode(door) })
@@ -135,9 +138,9 @@ RegisterNetEvent('bcc-doorlocks:AddPlayerToDoor', function(door, playerId)
             table.insert(idsAllowed, playerId)
             MySQL.query.await("UPDATE doorlocks SET ids_allowed = ? WHERE doorinfo = ?",
                 { json.encode(idsAllowed), json.encode(door) })
-            print("^2[bcc-doorlocks] Player added to existing door.^0")
+            DBG:Success("Player added to existing door.")
         else
-            print("^3[bcc-doorlocks] Player already has access to this door.^0")
+            DBG:Warning("Player already has access to this door.")
         end
         doorId = result[1].doorid
     else
@@ -147,49 +150,57 @@ RegisterNetEvent('bcc-doorlocks:AddPlayerToDoor', function(door, playerId)
         if insertResult and insertResult.insertId then
             doorId = insertResult.insertId
         else
-            print("^1[bcc-doorlocks] Error: Failed to insert door into database.^0")
+            DBG:Error("Failed to insert door into database.")
             return
         end
-        print("^2[bcc-doorlocks] New door created and player added.^0")
+        DBG:Success("New door created and player added.")
     end
 
     if doorId then
-        print("^2[bcc-doorlocks] Returning door ID: " .. tostring(doorId) .. "^0")
-        TriggerClientEvent('bcc-doorlocks:ExportCreationIdCatch', _source, doorId)
+        DBG:Info("Returning door ID: " .. tostring(doorId))
+        TriggerClientEvent('bcc-doorlocks:ExportCreationIdCatch', src, doorId)
     else
-        print("^1[bcc-doorlocks] Error: Failed to retrieve or create door ID.^0")
+        DBG:Error("Failed to retrieve or create door ID.")
     end
 end)
 
 
-RegisterServerEvent('bcc-doorlocks:GetAllDoorlocks')
-AddEventHandler('bcc-doorlocks:GetAllDoorlocks', function()
-    local _source = source
+RegisterNetEvent('bcc-doorlocks:GetAllDoorlocks', function()
+    local src = source
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return
+    end
     local result = MySQL.query.await('SELECT * FROM doorlocks')
 
     if result then
-        TriggerClientEvent('bcc-doorlocks:ReceiveAllDoorlocks', _source, result)
+        TriggerClientEvent('bcc-doorlocks:ReceiveAllDoorlocks', src, result)
     else
-        TriggerClientEvent('VORPcore:NotifyRightTip', _source, "Failed to fetch doorlocks.", 4000)
+        TriggerClientEvent('Core:NotifyRightTip', src, "Failed to fetch doorlocks.", 4000)
     end
 end)
 
 BccUtils.RPC:Register("bcc-doorlocks:GetDoorField", function(params, cb, recSource)
+    local src = recSource
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return cb(nil)
+    end
     local doorId = params.doorId
     local field = params.field
 
     if not doorId or not field then
-        devPrint("Invalid parameters for GetDoorField: Door ID or field is missing.")
-        cb(nil)
-        return
+        DBG:Error("Invalid parameters for GetDoorField: Door ID or field is missing.")
+        return cb(nil)
     end
 
     local door = DoorLocksAPI:GetDoorById(doorId)
 
     if not door then
-        devPrint("Door ID not found in API: " .. tostring(doorId))
-        cb(nil)
-        return
+        DBG:Error("Door ID not found in API: " .. tostring(doorId))
+        return cb(nil)
     end
 
     -- Dynamically fetch the specified field
@@ -201,94 +212,102 @@ BccUtils.RPC:Register("bcc-doorlocks:GetDoorField", function(params, cb, recSour
     elseif field == 'keyitem' then
         result = door:GetKeyItem()
     else
-        devPrint("Invalid field specified for GetDoorField: " .. tostring(field))
-        cb(nil)
-        return
+        DBG:Error("Invalid field specified for GetDoorField: " .. tostring(field))
+        return cb(nil)
     end
 
-    devPrint("Fetched " .. field .. " for door ID: " .. tostring(doorId) .. ": " .. json.encode(result))
+    DBG:Info("Fetched " .. field .. " for door ID: " .. tostring(doorId) .. ": " .. json.encode(result))
     cb(json.encode(result)) -- Return the field's value as JSON
 end)
 
 BccUtils.RPC:Register("bcc-doorlocks:UpdateDoorlock", function(params, cb, recSource)
+    local src = recSource
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return cb(false)
+    end
     local doorId = params.doorId
     local field = params.field
     local value = params.value
 
     -- Validate parameters
     if not doorId or not field or not value then
-        devPrint("^1Invalid parameters for UpdateDoorlock: Door ID, field, or value is missing.^0")
-        cb(false)
-        return
+        DBG:Error("Invalid parameters for UpdateDoorlock: Door ID, field, or value is missing.")
+        return cb(false)
     end
 
     local door = DoorLocksAPI:GetDoorById(doorId)
 
     -- Validate door existence
     if not door then
-        devPrint("^1Door ID not found in API: " .. tostring(doorId) .. "^0")
-        cb(false)
-        return
+        DBG:Error("Door ID not found in API: " .. tostring(doorId))
+        return cb(false)
     end
 
     -- Update the specified field
     if field == 'jobsallowedtoopen' then
         local jobs = type(value) == "string" and json.decode(value) or value
         if not jobs or type(jobs) ~= "table" then
-            devPrint("^1Invalid jobs data provided for door ID: " .. tostring(doorId) .. "^0")
-            cb(false)
-            return
+            DBG:Error("Invalid jobs data provided for door ID: " .. tostring(doorId))
+            return cb(false)
         end
         door:UpdateAllowedJobs(jobs)
-        devPrint("^2Updated allowed jobs for door ID: " .. tostring(doorId) .. "^0")
+        DBG:Success("Updated allowed jobs for door ID: " .. tostring(doorId))
     elseif field == 'keyitem' then
         if type(value) ~= "string" then
-            devPrint("^1Invalid key item provided for door ID: " .. tostring(doorId) .. "^0")
-            cb(false)
-            return
+            DBG:Error("Invalid key item provided for door ID: " .. tostring(doorId))
+            return cb(false)
         end
         door:UpdateKeyItem(value)
-        devPrint("^2Updated key item for door ID: " .. tostring(doorId) .. "^0")
+        DBG:Success("Updated key item for door ID: " .. tostring(doorId))
     elseif field == 'ids_allowed' then
         local ids = type(value) == "string" and json.decode(value) or value
         if not ids or type(ids) ~= "table" then
-            devPrint("^1Invalid allowed IDs provided for door ID: " .. tostring(doorId) .. "^0")
-            cb(false)
-            return
+            DBG:Error("Invalid allowed IDs provided for door ID: " .. tostring(doorId))
+            return cb(false)
         end
         door:UpdateAllowedIds(ids)
-        devPrint("^2Updated allowed IDs for door ID: " .. tostring(doorId) .. "^0")
+        DBG:Success("Updated allowed IDs for door ID: " .. tostring(doorId))
     else
-        devPrint("^1Invalid field specified for UpdateDoorlock: " .. tostring(field) .. "^0")
-        cb(false)
-        return
+        DBG:Error("Invalid field specified for UpdateDoorlock: " .. tostring(field))
+        return cb(false)
     end
 
     -- Return success after updates
     cb(true)
 end)
 
-RegisterServerEvent('bcc-doorlocks:GetDoorlockDetails')
-AddEventHandler('bcc-doorlocks:GetDoorlockDetails', function(doorId)
-    local _source = source
+RegisterNetEvent('bcc-doorlocks:GetDoorlockDetails', function(doorId)
+    local src = source
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return
+    end
     local result = MySQL.query.await('SELECT * FROM doorlocks WHERE doorid = ?', { doorId })
 
     if result and #result > 0 then
-        TriggerClientEvent('bcc-doorlocks:ReceiveDoorlockDetails', _source, result[1])
+        TriggerClientEvent('bcc-doorlocks:ReceiveDoorlockDetails', src, result[1])
     else
-        TriggerClientEvent('VORPcore:NotifyRightTip', _source, "Door not found.", 4000)
+        TriggerClientEvent('Core:NotifyRightTip', src, "Door not found.", 4000)
     end
 end)
 
 -- Register the RPC for deleting a door lock
 BccUtils.RPC:Register("bcc-doorlocks:DeleteDoorlock", function(params, cb, recSource)
+    local src = recSource
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return cb(false)
+    end
     local doorlockId = params.doorlockId
 
     -- Validate the doorlock ID
     if not doorlockId then
-        devPrint("^1Invalid doorlock ID provided for deletion.^0")
-        cb(false)
-        return
+        DBG:Error("Invalid doorlock ID provided for deletion.")
+        return cb(false)
     end
 
     -- Query the database to check if the door exists
@@ -297,147 +316,164 @@ BccUtils.RPC:Register("bcc-doorlocks:DeleteDoorlock", function(params, cb, recSo
     if result and #result > 0 then
         -- Delete the door lock from the database
         MySQL.query.await('DELETE FROM doorlocks WHERE doorid = ?', { doorlockId })
-        devPrint("^2Successfully deleted door lock ID: " .. tostring(doorlockId) .. "^0")
-        cb(true)
-
-        -- Optionally, notify other clients about the deletion if needed
-        VORPcore.NotifyRightTip(_source, _U("doorDeleted"), 4000)
+        DBG:Success("Successfully deleted door lock ID: " .. tostring(doorlockId))
+        Core.NotifyRightTip(src, _U("doorDeleted"), 4000)
+        return cb(true)
     else
-        devPrint("^1Door lock ID not found: " .. tostring(doorlockId) .. "^0")
-        cb(false)
+        DBG:Error("Door lock ID not found: " .. tostring(doorlockId))
+        return cb(false)
     end
 end)
 
-RegisterServerEvent('bcc-doorlocks:DeleteDoor', function(doorTable)
-    local _source = source
-    local user = VORPcore.getUser(_source)
-    if not user then return end
-    devPrint("DeleteDoor triggered for doorTable: " .. json.encode(doorTable))
-
+RegisterNetEvent('bcc-doorlocks:DeleteDoor', function(doorTable)
+    local src = source
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return
+    end
+    DBG:Info("DeleteDoor triggered for doorTable: " .. json.encode(doorTable))
     MySQL.query.await('DELETE FROM `doorlocks` WHERE `doorinfo` = ?', { json.encode(doorTable) })
-    devPrint("Door deleted from DB for doorTable: " .. json.encode(doorTable))
+    DBG:Success("Door deleted from DB for doorTable: " .. json.encode(doorTable))
 
     TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, false, false, true, false)
 
-    VORPcore.NotifyRightTip(_source, _U("doorDeleted"), 4000)
+    Core.NotifyRightTip(src, _U("doorDeleted"), 4000)
 end)
 
-RegisterServerEvent('bcc-doorlocks:ServDoorStatusSet', function(doorTable, locked, lockpicked)
-    local _source = source
-    local user = VORPcore.getUser(_source)
-    if not user then return end
+RegisterNetEvent('bcc-doorlocks:ServDoorStatusSet', function(doorTable, locked, lockpicked)
+    local src = source
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return
+    end
+
     local character = user.getUsedCharacter
-    devPrint("ServDoorStatusSet triggered with door status: " .. tostring(locked))
+    local charId = character.charIdentifier
+    DBG:Info("ServDoorStatusSet triggered with door status: " .. tostring(locked))
 
     local lockedparam = locked and 'true' or 'false'
-    local jobFound, keyFound = false, false
-
-    -- Fetch door information from the database
-    local result = MySQL.query.await('SELECT * FROM `doorlocks` WHERE `doorinfo` = ?', { json.encode(doorTable) })
-
-    if not result or #result == 0 then
-        devPrint("^1Error: Door not found in the database.^0")
-        return
-    end
-
-    local doorData = result[1]
-
-    -- Check jobsallowedtoopen
-    local jobsAllowed = json.decode(doorData.jobsallowedtoopen or "[]")
-    if jobsAllowed and type(jobsAllowed) == "table" then
-        for _, job in pairs(jobsAllowed) do
-            if job == "none" then
-                devPrint("Job is set to 'none', skipping job check.")
-                jobFound = true
-                break
-            elseif character.job == job then
-                devPrint("Job match found for user: " .. character.identifier)
-                jobFound = true
-                break
-            end
-        end
-    end
-
-    -- If jobFound, update the lock status
-    if jobFound then
-        MySQL.query.await('UPDATE `doorlocks` SET `locked` = ? WHERE `doorinfo` = ?',
-            { lockedparam, json.encode(doorTable) })
-        TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true, _source)
-        return
-    end
-
-    -- Check keyitem if no job match
-    if doorData.keyitem ~= "none" then
-        if exports.vorp_inventory:getItemCount(_source, nil, tostring(doorData.keyitem)) >= 1 then
-            devPrint("Key item found for user: " .. character.identifier)
-            keyFound = true
-            MySQL.query.await('UPDATE `doorlocks` SET `locked` = ? WHERE `doorinfo` = ?',
-                { lockedparam, json.encode(doorTable) })
-            TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true, _source)
-            return
-        end
-    end
-
-    -- Check ids_allowed if no key match
-    local idsAllowed = json.decode(doorData.ids_allowed or "[]")
-    if idsAllowed and type(idsAllowed) == "table" then
-        for _, id in pairs(idsAllowed) do
-            if character.charIdentifier == id then
-                devPrint("ID match found for user: " .. character.identifier)
-                MySQL.query.await('UPDATE `doorlocks` SET `locked` = ? WHERE `doorinfo` = ?',
-                    { lockedparam, json.encode(doorTable) })
-                TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true, _source)
-                return
-            end
-        end
-    end
+    local isAllowed = false
+    local result, doorData
 
     -- Handle lockpicked case
     if lockpicked then
-        devPrint("Lockpick successful for doorTable: " .. json.encode(doorTable))
-        MySQL.query.await('UPDATE `doorlocks` SET `locked` = ? WHERE `doorinfo` = ?',
-            { lockedparam, json.encode(doorTable) })
-        TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true, _source)
+        DBG:Info("Lockpick successful for doorTable: " .. json.encode(doorTable))
+        isAllowed = true
+    end
+
+    -- Check if the user has admin privileges from config (group/job)
+    if not isAllowed then
+        if CheckAdmin(character) then
+            isAllowed = true
+        end
+    end
+
+    if not isAllowed then
+        -- Fetch door information from the database
+        result = MySQL.query.await('SELECT * FROM `doorlocks` WHERE `doorinfo` = ?', { json.encode(doorTable) })
+
+        if not result or #result == 0 then
+            DBG:Error("Door not found in database.")
+            return
+        end
+
+        doorData = result[1]
+    end
+
+    if not isAllowed then
+        -- Check jobsallowedtoopen database field
+        local jobsAllowed = json.decode(doorData.jobsallowedtoopen or "[]")
+        if jobsAllowed and type(jobsAllowed) == "table" then
+            for _, job in pairs(jobsAllowed) do
+                if job == "none" then
+                    DBG:Info("Job is set to 'none', skipping job check.")
+                    break
+                elseif character.job == job then
+                    DBG:Info("Job match found for character: " .. charId)
+                    isAllowed = true
+                    break
+                end
+            end
+        end
+    end
+
+    if not isAllowed then
+        -- Check inventory for keyitem
+        if doorData.keyitem ~= "none" then
+            if exports.vorp_inventory:getItemCount(src, nil, tostring(doorData.keyitem)) >= 1 then
+                DBG:Info("Key item found for character: " .. charId)
+                isAllowed = true
+            end
+        end
+    end
+
+    if not isAllowed then
+        -- Check ids_allowed database field
+        local idsAllowed = json.decode(doorData.ids_allowed or "[]")
+        if idsAllowed and type(idsAllowed) == "table" then
+            for _, id in pairs(idsAllowed) do
+                if charId == id then
+                    DBG:Info("ID match found for character: " .. charId)
+                    MySQL.query.await('UPDATE `doorlocks` SET `locked` = ? WHERE `doorinfo` = ?', { lockedparam, json.encode(doorTable) })
+                    TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true, src)
+                    return
+                end
+            end
+        end
+    end
+
+    -- If isAllowed, update the lock status
+    if isAllowed then
+        MySQL.query.await('UPDATE `doorlocks` SET `locked` = ? WHERE `doorinfo` = ?', { lockedparam, json.encode(doorTable) })
+        TriggerClientEvent('bcc-doorlocks:ClientSetDoorStatus', -1, doorTable, locked, true, false, true, src)
         return
     end
 
     -- If all checks fail, deny access
-    devPrint("^1Access denied for user: " .. character.identifier .. "^0")
+    DBG:Error("Access denied for character: " .. charId .. " to doorTable: " .. json.encode(doorTable))
 end)
 
-RegisterServerEvent('bcc-doorlocks:LockPickCheck', function(doorTable)
-    local _source = source
-    local user = VORPcore.getUser(_source)
-    if not user then return end
-    devPrint("LockPickCheck triggered for user: " .. _source)
+RegisterNetEvent('bcc-doorlocks:LockPickCheck', function(doorTable)
+    local src = source
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return
+    end
+    DBG:Info("LockPickCheck triggered for user: " .. src)
+
     local lockpickItem = Config.LockPicking.minigameSettings.lockpickitem
     local metadata = nil
 
-    local itemCount = exports.vorp_inventory:getItemCount(_source, nil, lockpickItem, metadata)
+    local itemCount = exports.vorp_inventory:getItemCount(src, nil, lockpickItem, metadata)
 
     if itemCount >= 1 then
-        devPrint("User has lockpick item")
-        TriggerClientEvent('bcc-doorlocks:lockpickingMinigame', _source, doorTable)
+        DBG:Info("User has lockpick item")
+        TriggerClientEvent('bcc-doorlocks:lockpickingMinigame', src, doorTable)
     else
-        devPrint("User does not have lockpick item")
-        VORPcore.NotifyRightTip(_source, _U("noLockpick"), 4000)
+        DBG:Info("User does not have lockpick item")
+        Core.NotifyRightTip(src, _U("noLockpick"), 4000)
     end
 end)
 
-RegisterServerEvent('bcc-doorlocks:RemoveLockpick', function()
-    local _source = source
-    local user = VORPcore.getUser(_source)
-    if not user then return end
-    devPrint("Removing lockpick for user: " .. _source)
-
+RegisterNetEvent('bcc-doorlocks:RemoveLockpick', function()
+    local src = source
+    local user = Core.getUser(src)
+    if not user then
+        DBG:Error("User not found for source: " .. tostring(src))
+        return
+    end
+    DBG:Info("Removing lockpick for user: " .. src)
     local lockpickItem = Config.LockPicking.minigameSettings.lockpickitem
     local metadata = nil
 
-    exports.vorp_inventory:subItem(_source, lockpickItem, 1, metadata, function(success)
+    exports.vorp_inventory:subItem(src, lockpickItem, 1, metadata, function(success)
         if success then
-            devPrint("Lockpick successfully removed from user: " .. _source)
+            DBG:Info("Lockpick successfully removed from user: " .. src)
         else
-            devPrint("Failed to remove lockpick for user: " .. _source)
+            DBG:Error("Failed to remove lockpick for user: " .. src)
         end
     end)
 end)
