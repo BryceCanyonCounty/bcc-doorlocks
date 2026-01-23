@@ -1,6 +1,33 @@
-local jobs, keyItem, ids = {}, nil, {}
+local BCCDoorLocksMenu = FeatherMenu:RegisterMenu("bcc:doorlocks:mainmenu",
+	{
+		top = "5%",
+		left = "5%",
+		["720width"] = "500px",
+		["1080width"] = "600px",
+		["2kwidth"] = "700px",
+		["4kwidth"] = "900px",
+		style = {},
+		contentslot = {
+			style = {
+				["height"] = "450px",
+				["min-height"] = "250px"
+			}
+		},
+		draggable = true
+	},
+	{
+		opened = function()
+			DisplayRadar(false)
+		end,
+		closed = function()
+			DisplayRadar(true)
+		end
+	}
+)
 
-function doorCreationMenu(door)
+local Jobs, KeyItem, Ids = {}, nil, {}
+
+function DoorCreationMenu(door)
     local mainDoorLocksMenu = BCCDoorLocksMenu:RegisterPage("bcc:doorlocks")
 
     -- Header for the door locks menu
@@ -21,9 +48,9 @@ function doorCreationMenu(door)
         style = {}
     }, function()
         -- Capture the job input
-        registerInput(_U("insertJob"), _U("setJob"), 'text', door, function(value)
-            devPrint("Job added: " .. value)
-            jobs[#jobs + 1] = value -- Add the job to the list
+        RegisterInput(_U("insertJob"), _U("setJob"), 'text', door, function(value)
+            DBG:Info("Job added: " .. value)
+            Jobs[#Jobs + 1] = value -- Add the job to the list
         end)
     end)
 
@@ -33,9 +60,9 @@ function doorCreationMenu(door)
         style = {}
     }, function()
         -- Capture the key item input
-        registerInput(_U("insertKeyItem"), _U("setKeyItem"), 'text', door, function(value)
-            devPrint("Key item set: " .. value)
-            keyItem = value -- Set the key item
+        RegisterInput(_U("insertKeyItem"), _U("setKeyItem"), 'text', door, function(value)
+            DBG:Info("Key item set: " .. value)
+            KeyItem = value -- Set the key item
         end)
     end)
 
@@ -45,9 +72,9 @@ function doorCreationMenu(door)
         style = {}
     }, function()
         -- Capture the IDs input
-        registerInput(_U("insertId"), _U("setIds"), 'number', door, function(value)
-            devPrint("ID added: " .. tostring(value))
-            ids[#ids + 1] = tonumber(value) -- Add the ID to the list
+        RegisterInput(_U("insertId"), _U("setIds"), 'number', door, function(value)
+            DBG:Info("ID added: " .. tostring(value))
+            Ids[#Ids + 1] = tonumber(value) -- Add the ID to the list
         end)
     end)
 
@@ -64,11 +91,11 @@ function doorCreationMenu(door)
         slot = "footer"
     }, function()
         -- Debug print to ensure that data is correct
-        devPrint("Sending to server: jobs: " ..
-            json.encode(jobs) .. ", keyItem: " .. tostring(keyItem) .. ", ids: " .. json.encode(ids))
+        DBG:Info("Sending to server: Jobs: " ..
+            json.encode(Jobs) .. ", KeyItem: " .. tostring(KeyItem) .. ", Ids: " .. json.encode(Ids))
 
-        -- Send the door, jobs, keyItem, and ids data to the server
-        TriggerServerEvent('bcc-doorlocks:InsertIntoDB', door, jobs, keyItem, ids)
+        -- Send the door, Jobs, KeyItem, and Ids data to the server
+        TriggerServerEvent('bcc-doorlocks:InsertIntoDB', door, Jobs, KeyItem, Ids)
         BCCDoorLocksMenu:Close() -- Close the menu after confirming
     end)
 
@@ -87,8 +114,8 @@ function doorCreationMenu(door)
     })
 end
 
--- Function to handle inputs for jobs, keyItem, and ids
-function registerInput(label, placeholder, inputType, door, callback)
+-- Function to handle inputs for Jobs, KeyItem, and Ids
+function RegisterInput(label, placeholder, inputType, door, callback)
     local doorLockinputMenu = BCCDoorLocksMenu:RegisterPage('input_page')
 
     -- Header for the door locks menu
@@ -116,10 +143,10 @@ function registerInput(label, placeholder, inputType, door, callback)
     }, function(data)
         if data.value and ((inputType == 'number' and tonumber(data.value)) or inputType == 'text') then
             inputValue = data.value -- Store the input value
-            devPrint("Input received: " .. inputValue)
+            DBG:Info("Input received: " .. inputValue)
         else
-            VORPcore.NotifyRightTip(_U("InvalidInput"), 4000) -- Notify user of invalid input
-            devPrint("Invalid input received")
+            Core.NotifyRightTip(_U("InvalidInput"), 4000) -- Notify user of invalid input
+            DBG:Warning("Invalid input received")
         end
     end)
 
@@ -135,15 +162,15 @@ function registerInput(label, placeholder, inputType, door, callback)
         slot = "footer",
         style = {}
     }, function()
-        devPrint("Confirm button clicked")
+        DBG:Info("Confirm button clicked")
         if inputValue then
-            devPrint("Input value to pass: " .. inputValue)
+            DBG:Info("Input value to pass: " .. inputValue)
             callback(inputValue)                              -- Process the input value via the callback
             BCCDoorLocksMenu:Close()                          -- Close the current menu
-            doorCreationMenu(door)                            -- Reopen the door creation menu
+            DoorCreationMenu(door)                            -- Reopen the door creation menu
         else
-            VORPcore.NotifyRightTip(_U("InvalidInput"), 4000) -- Notify user of invalid input
-            devPrint("No valid input to process")
+            Core.NotifyRightTip(_U("InvalidInput"), 4000) -- Notify user of invalid input
+            DBG:Warning("No valid input to process")
         end
     end)
 
@@ -153,9 +180,9 @@ function registerInput(label, placeholder, inputType, door, callback)
         slot = "footer",
         style = {}
     }, function()
-        devPrint("Back button clicked, closing menu")
+        DBG:Info("Back button clicked, closing menu")
         BCCDoorLocksMenu:Close() -- Close the current menu
-        doorCreationMenu(door)   -- Reopen the door creation menu
+        DoorCreationMenu(door)   -- Reopen the door creation menu
     end)
 
     -- Final bottom line element
@@ -170,7 +197,7 @@ function registerInput(label, placeholder, inputType, door, callback)
     })
 end
 
-function manageDoorLocksMenu()
+function ManageDoorLocksMenu()
     local manageDoorLocksMenu = BCCDoorLocksMenu:RegisterPage("bcc:managedoorlocks")
 
     -- Header
@@ -191,8 +218,8 @@ function manageDoorLocksMenu()
         style = {}
     }, function()
         BCCDoorLocksMenu:Close()
-        local door = getDoor('creation')
-        doorCreationMenu(door)
+        local door = GetDoor('creation')
+        DoorCreationMenu(door)
     end)
 
     -- View All Doorlocks button
@@ -210,7 +237,7 @@ function manageDoorLocksMenu()
         style = {}
     }, function()
         BCCDoorLocksMenu:Close()
-        local door = getDoor('deletion')
+        local door = GetDoor('deletion')
         TriggerServerEvent('bcc-doorlocks:DeleteDoor', door)
     end)
 
@@ -241,8 +268,7 @@ function manageDoorLocksMenu()
     })
 end
 
-RegisterNetEvent('bcc-doorlocks:ReceiveAllDoorlocks')
-AddEventHandler('bcc-doorlocks:ReceiveAllDoorlocks', function(doorlocks)
+RegisterNetEvent('bcc-doorlocks:ReceiveAllDoorlocks', function(doorlocks)
     local doorMenu = BCCDoorLocksMenu:RegisterPage("doorlocks_list")
     doorMenu:RegisterElement('header', {
         value = _U('allDoors'),
@@ -261,7 +287,7 @@ AddEventHandler('bcc-doorlocks:ReceiveAllDoorlocks', function(doorlocks)
             style = {}
         }, function()
             -- Handle specific door selection (edit or delete)
-            manageSpecificDoorMenu(door)
+            ManageSpecificDoorMenu(door)
         end)
     end
 
@@ -277,7 +303,7 @@ AddEventHandler('bcc-doorlocks:ReceiveAllDoorlocks', function(doorlocks)
         style = {}
     }, function()
         BCCDoorLocksMenu:Close()
-        manageDoorLocksMenu()
+        ManageDoorLocksMenu()
     end)
 
     doorMenu:RegisterElement('bottomline', {
@@ -290,7 +316,7 @@ AddEventHandler('bcc-doorlocks:ReceiveAllDoorlocks', function(doorlocks)
     })
 end)
 
-function manageSpecificDoorMenu(door)
+function ManageSpecificDoorMenu(door)
     local specificDoorMenu = BCCDoorLocksMenu:RegisterPage("manage_specific_door")
 
     -- Header
@@ -310,8 +336,8 @@ function manageSpecificDoorMenu(door)
         label = _U('editDoorid'),
         style = {}
     }, function()
-        devPrint("Editing door ID: " .. door.doorid)
-        editDoorMenu(door) -- Open the edit menu for the specific door
+        DBG:Info("Editing door ID: " .. door.doorid)
+        EditDoorMenu(door) -- Open the edit menu for the specific door
     end)
 
     -- Delete Door button
@@ -319,8 +345,8 @@ function manageSpecificDoorMenu(door)
         label = _U('removeDoor'),
         style = {}
     }, function()
-        devPrint("Deleting door ID: " .. door.doorid)
-        showConfirmationDialog(door.doorid) -- Open the confirmation dialog for deletion
+        DBG:Info("Deleting door ID: " .. door.doorid)
+        ShowConfirmationDialog(door.doorid) -- Open the confirmation dialog for deletion
     end)
 
     -- Divider line
@@ -336,7 +362,7 @@ function manageSpecificDoorMenu(door)
         style = {}
     }, function()
         BCCDoorLocksMenu:Close()
-        manageDoorLocksMenu() -- Return to the main door locks menu
+        ManageDoorLocksMenu() -- Return to the main door locks menu
     end)
 
     -- Open the menu
@@ -346,7 +372,7 @@ function manageSpecificDoorMenu(door)
 end
 
 -- Add this helper function for delete confirmation
-function showConfirmationDialog(doorlockId)
+function ShowConfirmationDialog(doorlockId)
     local confirmMenu = BCCDoorLocksMenu:RegisterPage("confirm_delete")
 
     -- Header
@@ -368,9 +394,9 @@ function showConfirmationDialog(doorlockId)
     }, function()
         BccUtils.RPC:Call("bcc-doorlocks:DeleteDoorlock", { doorlockId = doorlockId }, function(success)
             if success then
-                VORPcore.NotifyRightTip(_U("doorRemoved"), 4000)      -- Notify that the door was removed
+                Core.NotifyRightTip(_U("doorRemoved"), 4000)      -- Notify that the door was removed
             else
-                VORPcore.NotifyRightTip(_U("doorRemoveFailed"), 4000) -- Notify of failure
+                Core.NotifyRightTip(_U("doorRemoveFailed"), 4000) -- Notify of failure
             end
         end)
         BCCDoorLocksMenu:Close()
@@ -383,7 +409,7 @@ function showConfirmationDialog(doorlockId)
         style = {}
     }, function()
         BCCDoorLocksMenu:Close()
-        manageDoorLocksMenu() -- Return to main manage menu
+        ManageDoorLocksMenu() -- Return to main manage menu
     end)
 
     -- Open the confirmation dialog menu
@@ -392,7 +418,7 @@ function showConfirmationDialog(doorlockId)
     })
 end
 
-function editDoorMenu(door)
+function EditDoorMenu(door)
     local editMenu = BCCDoorLocksMenu:RegisterPage("edit_doorlock")
 
     -- Header
@@ -432,7 +458,7 @@ function editDoorMenu(door)
             style = {}
         }, function(data)
             jobValue = data.value
-            devPrint("Captured job input: " .. tostring(jobValue))
+            DBG:Info("Captured job input: " .. tostring(jobValue))
         end)
 
         -- Submit Button
@@ -442,7 +468,7 @@ function editDoorMenu(door)
             style = {}
         }, function()
             if not jobValue or jobValue == "" then
-                VORPcore.NotifyRightTip(_U('jobNameCannotbeEmpty'), 4000)
+                Core.NotifyRightTip(_U('jobNameCannotbeEmpty'), 4000)
                 return
             end
 
@@ -457,7 +483,7 @@ function editDoorMenu(door)
                     if not table.contains(jobsTable, jobValue) then
                         table.insert(jobsTable, jobValue)
                     else
-                        VORPcore.NotifyRightTip(_U('jobAlreadyExists'), 4000)
+                        Core.NotifyRightTip(_U('jobAlreadyExists'), 4000)
                         return
                     end
 
@@ -467,14 +493,14 @@ function editDoorMenu(door)
                         value = json.encode(jobsTable)
                     }, function(success)
                         if success then
-                            VORPcore.NotifyRightTip(_U('allowedJobUpdated'), 4000)
+                            Core.NotifyRightTip(_U('allowedJobUpdated'), 4000)
                         else
-                            VORPcore.NotifyRightTip(_U('allowedJobFailed'), 4000)
+                            Core.NotifyRightTip(_U('allowedJobFailed'), 4000)
                         end
 
                         -- Return to specific door management menu
-                        devPrint("Returning to specific door management menu for door ID: " .. door.doorid)
-                        manageSpecificDoorMenu(door)
+                        DBG:Info("Returning to specific door management menu for door ID: " .. door.doorid)
+                        ManageSpecificDoorMenu(door)
                     end)
                 end)
         end)
@@ -485,8 +511,8 @@ function editDoorMenu(door)
             slot = "footer",
             style = {}
         }, function()
-            devPrint("Returning to specific door management menu for door ID: " .. door.doorid)
-            manageSpecificDoorMenu(door)
+            DBG:Info("Returning to specific door management menu for door ID: " .. door.doorid)
+            ManageSpecificDoorMenu(door)
         end)
 
         BCCDoorLocksMenu:Open({
@@ -521,11 +547,11 @@ function editDoorMenu(door)
             keyItemValue = data.value
 
             if not keyItemValue or keyItemValue == "" then
-                VORPcore.NotifyRightTip("Please provide a valid key item name.", 4000)
+                Core.NotifyRightTip("Please provide a valid key item name.", 4000)
                 return
             end
 
-            devPrint("Captured key item input for door ID: " .. door.doorid .. " with value: " .. keyItemValue)
+            DBG:Info("Captured key item input for door ID: " .. door.doorid .. " with value: " .. keyItemValue)
         end)
 
         editKeyItemMenu:RegisterElement('button', {
@@ -534,19 +560,19 @@ function editDoorMenu(door)
             style = {}
         }, function()
             if not keyItemValue or keyItemValue == "" then
-                VORPcore.NotifyRightTip(_U('keyItemNameCannotBeEmpty'), 4000)
+                Core.NotifyRightTip(_U('keyItemNameCannotBeEmpty'), 4000)
                 return
             end
 
             BccUtils.RPC:Call("bcc-doorlocks:UpdateDoorlock",
                 { doorId = door.doorid, field = 'keyitem', value = keyItemValue }, function(success)
                     if success then
-                        VORPcore.NotifyRightTip(_U('keyItemUpdated'), 4000)
+                        Core.NotifyRightTip(_U('keyItemUpdated'), 4000)
                     else
-                        VORPcore.NotifyRightTip(_U('keyItemFailed'), 4000)
+                        Core.NotifyRightTip(_U('keyItemFailed'), 4000)
                     end
-                    devPrint("Returning to specific door management menu for door ID: " .. door.doorid)
-                    manageSpecificDoorMenu(door)
+                    DBG:Info("Returning to specific door management menu for door ID: " .. door.doorid)
+                    ManageSpecificDoorMenu(door)
                 end
             )
         end)
@@ -556,7 +582,7 @@ function editDoorMenu(door)
             slot = "footer",
             style = {}
         }, function()
-            manageSpecificDoorMenu(door)
+            ManageSpecificDoorMenu(door)
         end)
 
         BCCDoorLocksMenu:Open({
@@ -591,11 +617,11 @@ function editDoorMenu(door)
             allowedIdValue = tonumber(data.value)
 
             if not allowedIdValue then
-                VORPcore.NotifyRightTip("Please provide a valid numeric character ID.", 4000)
+                Core.NotifyRightTip("Please provide a valid numeric character ID.", 4000)
                 return
             end
 
-            devPrint("Captured allowed ID input for door ID: " ..
+            DBG:Info("Captured allowed ID input for door ID: " ..
                 door.doorid .. " with value: " .. tostring(allowedIdValue))
         end)
 
@@ -605,37 +631,36 @@ function editDoorMenu(door)
             style = {}
         }, function()
             if not allowedIdValue then
-                VORPcore.NotifyRightTip(_U('allowedIDCannotBeEmpty'), 4000)
+                Core.NotifyRightTip(_U('allowedIDCannotBeEmpty'), 4000)
                 return
             end
 
-            BccUtils.RPC:Call("bcc-doorlocks:GetDoorField", { doorId = door.doorid, field = 'ids_allowed' },
-                function(existingIds)
-                    if not existingIds then
-                        existingIds = "[]"
-                    end
+            BccUtils.RPC:Call("bcc-doorlocks:GetDoorField", { doorId = door.doorid, field = 'ids_allowed' }, function(existingIds)
+                if not existingIds then
+                    existingIds = "[]"
+                end
 
-                    local idsTable = json.decode(existingIds) or {}
+                local idsTable = json.decode(existingIds) or {}
 
-                    if not table.contains(idsTable, allowedIdValue) then
-                        table.insert(idsTable, allowedIdValue)
-                    else
-                        VORPcore.NotifyRightTip(_U('allowedIDExists'), 4000)
-                        return
-                    end
+                if not table.contains(idsTable, allowedIdValue) then
+                    table.insert(idsTable, allowedIdValue)
+                else
+                    Core.NotifyRightTip(_U('allowedIDExists'), 4000)
+                    return
+                end
 
-                    BccUtils.RPC:Call("bcc-doorlocks:UpdateDoorlock",
-                        { doorId = door.doorid, field = 'ids_allowed', value = json.encode(idsTable) }, function(success)
-                            if success then
-                                VORPcore.NotifyRightTip(_U('allowedIDsUpdated'), 4000)
-                            else
-                                VORPcore.NotifyRightTip(_U('allowedIDsFailed'), 4000)
-                            end
-                            devPrint("Returning to specific door management menu for door ID: " .. door.doorid)
-                            manageSpecificDoorMenu(door)
+                BccUtils.RPC:Call("bcc-doorlocks:UpdateDoorlock",
+                    { doorId = door.doorid, field = 'ids_allowed', value = json.encode(idsTable) }, function(success)
+                        if success then
+                            Core.NotifyRightTip(_U('allowedIDsUpdated'), 4000)
+                        else
+                            Core.NotifyRightTip(_U('allowedIDsFailed'), 4000)
                         end
-                    )
-                end)
+                        DBG:Info("Returning to specific door management menu for door ID: " .. door.doorid)
+                        ManageSpecificDoorMenu(door)
+                    end
+                )
+            end)
         end)
 
         editAllowedIdMenu:RegisterElement('button', {
@@ -643,8 +668,8 @@ function editDoorMenu(door)
             slot = "footer",
             style = {}
         }, function()
-            devPrint("Returning to specific door management menu for door ID: " .. door.doorid)
-            manageSpecificDoorMenu(door)
+            DBG:Info("Returning to specific door management menu for door ID: " .. door.doorid)
+            ManageSpecificDoorMenu(door)
         end)
 
         BCCDoorLocksMenu:Open({
@@ -656,8 +681,8 @@ function editDoorMenu(door)
         label = _U('BackButton'),
         style = {}
     }, function()
-        devPrint("Returning to specific door management menu for door ID: " .. door.doorid)
-        manageSpecificDoorMenu(door)
+        DBG:Info("Returning to specific door management menu for door ID: " .. door.doorid)
+        ManageSpecificDoorMenu(door)
     end)
 
     BCCDoorLocksMenu:Open({
