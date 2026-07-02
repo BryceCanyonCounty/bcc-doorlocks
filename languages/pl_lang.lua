@@ -20,6 +20,7 @@ Locales["pl_lang"] = {
 
     ---- Menu tworzenia drzwi ---
     menuTitle = 'Tworzenie drzwi',
+    linkSecondDoor = "Połącz drugie drzwi (drzwi podwójne)",
     setJob = 'Ustaw pracę',
     setJob_desc = 'Ustaw pracę, która może zamykać i otwierać drzwi! Musisz wpisać nazwę pracy!',
     setKeyItem = 'Przedmiot-klucz',
