@@ -20,6 +20,7 @@ Locales["en_lang"] = {
 
     ---- Door Creation Menu ---
     menuTitle = 'Door Creation',
+    linkSecondDoor = "Link Second Door (Double Door)",
     setJob = 'Set Job',
     setJob_desc = 'Set a job that is able to lock and unlock the door! You must enter the job title!',
     setKeyItem = 'Key item',
