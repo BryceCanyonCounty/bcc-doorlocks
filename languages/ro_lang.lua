@@ -20,6 +20,7 @@ Locales["ro_lang"] = {
 
     ---- Meniul de Creare a Usilor ---
     menuTitle = 'Creare Usa',
+    linkSecondDoor = "Conectează a doua ușă (ușă dublă)",
     setJob = 'Seteaza Job',
     setJob_desc = 'Seteaza un job care poate inchide si deschide usa! Trebuie sa introduci titlul jobului!',
     setKeyItem = 'Element cheie',
