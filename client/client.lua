@@ -38,7 +38,7 @@ RegisterNetEvent('bcc-doorlocks:ClientSetDoorStatus',
         DBG:Info("ClientSetDoorStatus event triggered. Door status: " .. tostring(locked) .. ", Deletion: " .. tostring(deletion))
 
         -- Ensure the first element of doorTable is valid before proceeding
-        SetDoorLockStatus(doorTable[1], locked, deletion)
+        SetDoorGroupLockStatus(doorTable, locked, deletion)
 
         if playerOpened then
             local player = GetPlayerServerId(tonumber(PlayerId()))
