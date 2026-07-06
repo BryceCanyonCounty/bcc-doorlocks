@@ -20,6 +20,7 @@ Locales["es_lang"] = {
 
     ---- Door Creation Menu ---
     menuTitle = 'Creacion Puertas',
+    linkSecondDoor = "Vincular segunda puerta (puerta doble)",
     setJob = 'Seleccionar Trabajo',
     setJob_desc = 'Establece un trabajo que sea capaz de bloquear y desbloquear la puerta! Debes ingresar el título del trabajo!',
     setKeyItem = 'Llaves',

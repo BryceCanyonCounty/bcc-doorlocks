@@ -20,6 +20,7 @@ Locales["fr_lang"] = {
 
     -- Menu de création de porte ---
     menuTitle = 'Création de porte',
+    linkSecondDoor = "Lier une deuxième porte (porte double)",
     setJob = 'Définir le travail',
     setJob_desc = 'Définir un travail capable de verrouiller et déverrouiller la porte ! Vous devez entrer le titre du travail !',
     setKeyItem = 'Objet clé',

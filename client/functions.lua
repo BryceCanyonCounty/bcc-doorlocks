@@ -90,6 +90,23 @@ function GetDoor(type)
 	end
 end
 
+function IsDoubleDoor(doorTable)
+    return type(doorTable) == "table" and type(doorTable[1]) == "table"
+end
+
+function GetDoorEntries(doorTable)
+    if IsDoubleDoor(doorTable) then
+        return doorTable
+    end
+    return { doorTable }
+end
+
+function SetDoorGroupLockStatus(doorTable, locked, deletion)
+    for _, entry in ipairs(GetDoorEntries(doorTable)) do
+        SetDoorLockStatus(entry[1], locked, deletion)
+    end
+end
+
 function SetDoorLockStatus(doorHash, locked, deletion) -- Function to lock and unlock doors
 	DBG:Info("SetDoorLockStatus called with doorHash: " ..
 		doorHash .. ", locked: " .. tostring(locked) .. ", deletion: " .. tostring(deletion))
@@ -117,8 +134,11 @@ function SetDoorLockStatus(doorHash, locked, deletion) -- Function to lock and u
 end
 
 local DoorHashes = {}
-function LockAndUnlockDoorHandler(doorTable) -- Function to lock/unlock doors
+function LockAndUnlockDoorHandler(doorTable) -- Function to lock/unlock doors (supports double doors)
 	DBG:Info("LockAndUnlockDoorHandler called with doorTable: " .. json.encode(doorTable))
+	local entries = GetDoorEntries(doorTable)
+	local primary = entries[1]
+
 	local LockGroup = BccUtils.Prompts:SetupPromptGroup()
 	local UnlockGroup = BccUtils.Prompts:SetupPromptGroup()
 	local LockPrompt = LockGroup:RegisterPrompt(_U("lockDoor"), Config.Keys.lock, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
@@ -128,7 +148,7 @@ function LockAndUnlockDoorHandler(doorTable) -- Function to lock/unlock doors
 		LockpickPrompt = UnlockGroup:RegisterPrompt(_U("lockpickDoor"), Config.Keys.lockpick, 1, 1, true, 'hold', { timedeventhash = "MEDIUM_TIMED_EVENT" })
 	end
 
-	local doorHash = doorTable[1]
+	local doorHash = primary[1]
 	if not DoorHashes[doorHash] then
 		DoorHashes[doorHash] = true
 	else
@@ -139,26 +159,33 @@ function LockAndUnlockDoorHandler(doorTable) -- Function to lock/unlock doors
 	while true do
 		Wait(0)
 		local playerPos = GetEntityCoords(PlayerPedId())
-		local doorPos = vector3(doorTable[4], doorTable[5], doorTable[6])
-		local dist = #(playerPos - doorPos)
-		local doorStatus = DoorSystemGetDoorState(doorTable[1])
+
+		-- Use whichever linked door is closest (relevant when this is a double door)
+		local dist = #(playerPos - vector3(primary[4], primary[5], primary[6]))
+		for i = 2, #entries do
+			local entry = entries[i]
+			local d = #(playerPos - vector3(entry[4], entry[5], entry[6]))
+			if d < dist then dist = d end
+		end
+
+		local doorStatus = DoorSystemGetDoorState(primary[1])
 		if doorStatus == 2 then break end
 		if dist <= radius then
 			if doorStatus ~= 1 then
 				LockGroup:ShowGroup(_U("doorManage"))
 				if LockPrompt:HasCompleted() then
-                    DBG:Info("Locking door via prompt.")
+                    DBG:Info("Locking door(s) via prompt.")
                     TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, true, false)
 				end
 			elseif doorStatus ~= 0 then
 				UnlockGroup:ShowGroup(_U("doorManage"))
 				if UnlockPrompt:HasCompleted() then
-					DBG:Info("Unlocking door via prompt.")
+					DBG:Info("Unlocking door(s) via prompt.")
 					TriggerServerEvent('bcc-doorlocks:ServDoorStatusSet', doorTable, false, false)
 				end
 				if Config.LockPicking.allowlockpicking then
 					if LockpickPrompt and LockpickPrompt:HasCompleted() then
-						DBG:Info("Lockpicking door via prompt.")
+						DBG:Info("Lockpicking door(s) via prompt.")
 						TriggerServerEvent('bcc-doorlocks:LockPickCheck', doorTable)
 					end
 				end

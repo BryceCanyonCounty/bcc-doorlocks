@@ -27,7 +27,7 @@ client_scripts {
     'client/MenuSetup.lua'
 }
 
-dependency {
+dependencies {
     'vorp_core',
     'vorp_inventory',
     'vorp_character',
@@ -36,4 +36,4 @@ dependency {
     'bcc-minigames'
 }
 
-version '1.2.0'
+version '1.3.0'

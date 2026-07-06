@@ -28,6 +28,8 @@ local BCCDoorLocksMenu = FeatherMenu:RegisterMenu("bcc:doorlocks:mainmenu",
 local Jobs, KeyItem, Ids = {}, nil, {}
 
 function DoorCreationMenu(door)
+    local doors = GetDoorEntries(door) -- list of 1 door, or 2 for a double door
+
     local mainDoorLocksMenu = BCCDoorLocksMenu:RegisterPage("bcc:doorlocks")
 
     -- Header for the door locks menu
@@ -42,13 +44,29 @@ function DoorCreationMenu(door)
         style = {}
     })
 
+    -- Link Second Door (turns this into a double door sharing one lock)
+    if #doors < 2 then
+        mainDoorLocksMenu:RegisterElement('button', {
+            label = _U("linkSecondDoor"),
+            style = {}
+        }, function()
+            BCCDoorLocksMenu:Close()
+            local secondDoor = GetDoor('creation')
+            if secondDoor then
+                doors[#doors + 1] = secondDoor
+                DBG:Info("Linked second door for double door lock.")
+            end
+            DoorCreationMenu(doors)
+        end)
+    end
+
     -- Set Job button
     mainDoorLocksMenu:RegisterElement('button', {
         label = _U("setJob"), -- Button label for setting Job 1
         style = {}
     }, function()
         -- Capture the job input
-        RegisterInput(_U("insertJob"), _U("setJob"), 'text', door, function(value)
+        RegisterInput(_U("insertJob"), _U("setJob"), 'text', doors, function(value)
             DBG:Info("Job added: " .. value)
             Jobs[#Jobs + 1] = value -- Add the job to the list
         end)
@@ -60,7 +78,7 @@ function DoorCreationMenu(door)
         style = {}
     }, function()
         -- Capture the key item input
-        RegisterInput(_U("insertKeyItem"), _U("setKeyItem"), 'text', door, function(value)
+        RegisterInput(_U("insertKeyItem"), _U("setKeyItem"), 'text', doors, function(value)
             DBG:Info("Key item set: " .. value)
             KeyItem = value -- Set the key item
         end)
@@ -72,7 +90,7 @@ function DoorCreationMenu(door)
         style = {}
     }, function()
         -- Capture the IDs input
-        RegisterInput(_U("insertId"), _U("setIds"), 'number', door, function(value)
+        RegisterInput(_U("insertId"), _U("setIds"), 'number', doors, function(value)
             DBG:Info("ID added: " .. tostring(value))
             Ids[#Ids + 1] = tonumber(value) -- Add the ID to the list
         end)
@@ -90,12 +108,13 @@ function DoorCreationMenu(door)
         style = {},
         slot = "footer"
     }, function()
+        local doorPayload = (#doors > 1) and doors or doors[1]
         -- Debug print to ensure that data is correct
         DBG:Info("Sending to server: Jobs: " ..
             json.encode(Jobs) .. ", KeyItem: " .. tostring(KeyItem) .. ", Ids: " .. json.encode(Ids))
 
         -- Send the door, Jobs, KeyItem, and Ids data to the server
-        TriggerServerEvent('bcc-doorlocks:InsertIntoDB', door, Jobs, KeyItem, Ids)
+        TriggerServerEvent('bcc-doorlocks:InsertIntoDB', doorPayload, Jobs, KeyItem, Ids)
         BCCDoorLocksMenu:Close() -- Close the menu after confirming
     end)
 

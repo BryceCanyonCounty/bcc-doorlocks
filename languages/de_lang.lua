@@ -20,6 +20,7 @@ Locales["de_lang"] = {
 
     ---- Door Creation Menu ---
     menuTitle = 'Tür erstellen',
+    linkSecondDoor = "Zweite Tür verknüpfen (Doppeltür)",
     setJob = 'Job setzen',
     setJob_desc = 'Setze einen Job, der die Tür auf und zuschließen kann!',
     setKeyItem = 'Schlüsselitem',
