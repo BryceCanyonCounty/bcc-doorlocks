@@ -19,16 +19,18 @@ CreateThread(function()
 
     -- Print a success message to the console
     print("Database table for \x1b[35m\x1b[1m*doorlocks*\x1b[0m created or updated \x1b[32msuccessfully\x1b[0m.")
-    -- Determine whether to seed: run when table empty OR when Config.SeedJailDoorsOnStart == true
+    -- Seed only when enabled, then either on every start or when the table is empty.
     local shouldSeed = false
     local countOk, countRes = pcall(function()
         return MySQL.query.await('SELECT COUNT(*) as cnt FROM `doorlocks`')
     end)
 
-    if Config.SeedJailDoorsOnStart then
-        shouldSeed = true
-    elseif countOk and countRes and countRes[1] and tonumber(countRes[1].cnt) == 0 then
-        shouldSeed = true
+    if Config.SeedJailDoors then
+        if Config.SeedJailDoorsOnStart then
+            shouldSeed = true
+        elseif countOk and countRes and countRes[1] and tonumber(countRes[1].cnt) == 0 then
+            shouldSeed = true
+        end
     end
 
     if shouldSeed then
@@ -44,7 +46,7 @@ CreateThread(function()
             if okq and exists and #exists == 0 then
                 MySQL.query.await(
                     'INSERT INTO `doorlocks` (`doorinfo`, `jobsallowedtoopen`, `keyitem`, `locked`, `ids_allowed`) VALUES (?, ?, ?, ?, ?)',
-                    { doorJson, 'none', 'none', 'true', json.encode({}) }
+                    { doorJson, 'none', 'none', Config.SeedJailDoorsLocked and 'true' or 'false', json.encode({}) }
                 )
                 seededCount = seededCount + 1
             end
@@ -73,16 +75,32 @@ CreateThread(function()
             print('[bcc-doorlocks] Warning: LoadResourceFile not available; skipping jail-door seeding.')
         end
     else
-        print('[bcc-doorlocks] Skipping jail-door seeding (table not empty and SeedJailDoorsOnStart is false).')
+        if not Config.SeedJailDoors then
+            print('[bcc-doorlocks] Jail-door seeding is disabled.')
+        else
+            print('[bcc-doorlocks] Skipping jail-door seeding (table not empty and SeedJailDoorsOnStart is false).')
+        end
     end
 
     if Config.CloseOnRestart then
         print("-------------------------------------------------------------")
-        print("BCC-Doorlocks - Close on Restart \x1b[32mactive\x1b[0m.")
-        print("All open Doors will \x1b[35m\x1b[1mclosed\x1b[0m")
+        print("BCC-Doorlocks - Close non-jail doors on restart \x1b[32mactive\x1b[0m.")
         print("-------------------------------------------------------------")
         MySQL.query.await([[
-            UPDATE doorlocks SET locked = 'true'
+            UPDATE doorlocks
+            SET locked = 'true'
+            WHERE LOWER(doorinfo) NOT LIKE '%jail%'
+        ]])
+    end
+
+    if Config.CloseJailDoorsOnRestart then
+        print("-------------------------------------------------------------")
+        print("BCC-Doorlocks - Close jail doors on restart \x1b[32mactive\x1b[0m.")
+        print("-------------------------------------------------------------")
+        MySQL.query.await([[
+            UPDATE doorlocks
+            SET locked = 'true'
+            WHERE LOWER(doorinfo) LIKE '%jail%'
         ]])
     end
 end)
