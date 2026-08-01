@@ -15,7 +15,9 @@ Config.Keys = {
 }
 -----------------------------------------------------
 
-Config.CloseOnRestart = true -- Close all doors on server restart
+-- Restart lock behavior. Jail doors are identified by "jail" in their door model name.
+Config.CloseOnRestart = true -- Lock all non-jail doors on server restart
+Config.CloseJailDoorsOnRestart = false -- Lock jail doors on server restart
 -----------------------------------------------------
 
 Config.ManageDoorLocks = 'ManageDoorLocks' -- Command to open door management menu
@@ -58,6 +60,12 @@ Config.SpooniEmerald = true -- If you are using spooni's emerald map and have do
 Config.SpooniManzanitaPost = true -- If you are using spooni's manzanita post map and have door conflicts set this to true
 Config.SpooniPronghornRanch = true -- If you are using spooni's pronghorn ranch map and have door conflicts set this to true
 
--- Seed jail doors behavior: when true, seed jail doors from `client/doorhashes.lua` on start.
--- If false, seeding will still run automatically on first-run when the `doorlocks` table is empty.
+-- Jail door seeding
+-- SeedJailDoors: Master switch. When false, jail doors are never automatically added to the database.
+-- SeedJailDoorsOnStart: When true, check for and add missing jail doors on every resource start.
+-- When false, the check only runs when the entire `doorlocks` table is empty (first-run behavior).
+-- SeedJailDoorsLocked: Initial state assigned to newly seeded jail doors. This does not change existing rows.
+-- Note: Config.CloseJailDoorsOnRestart = true will lock every jail door stored in the database.
+Config.SeedJailDoors = true
 Config.SeedJailDoorsOnStart = false
+Config.SeedJailDoorsLocked = false
