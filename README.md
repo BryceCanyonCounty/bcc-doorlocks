@@ -37,6 +37,21 @@
 4. The database schema will automatically initialize.
 5. Restart your server.
 
+### Keep selected doors open after restart
+
+Add each door's database ID (`doorid` in the `doorlocks` table) to
+`Config.KeepOpenOnRestart` in `config.lua`:
+
+```lua
+Config.KeepOpenOnRestart = {
+    12,
+    34,
+}
+```
+
+These doors are explicitly unlocked after the normal restart lock rules run.
+They can still be locked by an authorized player during normal gameplay.
+
 ## API
 
 ### Create Door
