@@ -18,6 +18,14 @@ Config.Keys = {
 -- Restart lock behavior. Jail doors are identified by "jail" in their door model name.
 Config.CloseOnRestart = true -- Lock all non-jail doors on server restart
 Config.CloseJailDoorsOnRestart = false -- Lock jail doors on server restart
+
+-- Door database IDs listed here are always unlocked when the resource starts.
+-- This override runs after the restart lock settings above. It does not prevent
+-- an authorized player from locking the door again while the server is running.
+Config.KeepOpenOnRestart = {
+    -- 12,
+    -- 34,
+}
 -----------------------------------------------------
 
 Config.ManageDoorLocks = 'ManageDoorLocks' -- Command to open door management menu
