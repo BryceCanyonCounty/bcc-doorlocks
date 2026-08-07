@@ -4,7 +4,7 @@ rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aw
 game 'rdr3'
 lua54 'yes'
 author 'BCC Team'
-version '1.3.1'
+version '1.3.2'
 
 shared_scripts {
     'config.lua',
