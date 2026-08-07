@@ -1,5 +1,4 @@
-<1.3.1>
-- Added a master setting to disable automatic jail-door seeding
-- Added a setting to choose the initial lock state of seeded jail doors
-- Added a separate restart lock setting for jail doors
-- Clarified jail-door seeding configuration behavior
+<1.3.2>
+- Added a configurable list of door IDs to keep unlocked after a resource restart
+- Restart-open overrides are applied after the standard jail and non-jail restart rules
+- Invalid and duplicate configured door IDs are safely ignored
