@@ -103,5 +103,32 @@ CreateThread(function()
             WHERE LOWER(doorinfo) LIKE '%jail%'
         ]])
     end
+
+    -- Apply explicit restart exceptions last so they take precedence over both
+    -- non-jail and jail restart locking rules.
+    if type(Config.KeepOpenOnRestart) == 'table' then
+        local seenDoorIds = {}
+        local unlockedCount = 0
+
+        for _, configuredDoorId in ipairs(Config.KeepOpenOnRestart) do
+            local doorId = tonumber(configuredDoorId)
+
+            if doorId and doorId > 0 and doorId % 1 == 0 and not seenDoorIds[doorId] then
+                seenDoorIds[doorId] = true
+                local result = MySQL.update.await(
+                    "UPDATE `doorlocks` SET `locked` = 'false' WHERE `doorid` = ?",
+                    { doorId }
+                )
+                unlockedCount = unlockedCount + (tonumber(result) or 0)
+            else
+                print('[bcc-doorlocks] Warning: ignoring invalid or duplicate KeepOpenOnRestart door ID: ' ..
+                    tostring(configuredDoorId))
+            end
+        end
+
+        if #Config.KeepOpenOnRestart > 0 then
+            print('[bcc-doorlocks] Kept ' .. unlockedCount .. ' configured door(s) open on restart.')
+        end
+    end
 end)
 
